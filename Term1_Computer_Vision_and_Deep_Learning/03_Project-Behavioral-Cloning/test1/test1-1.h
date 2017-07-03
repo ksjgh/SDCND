@@ -4,7 +4,3 @@ windows_sim/
 data_sample/
 data/
 
-./test1/*.h 
-./test2/*.h
-
-
