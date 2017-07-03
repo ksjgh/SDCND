@@ -1,10 +1,9 @@
 *.h5
-test8.h6
 windows_sim/
-data_sample/
-data/
+data_sample/**/*.jpg
+data/**/*.jpg
+data/IMG.mp4
 
-test1/*.h 
-test2/*.h
+data_sample/IMG.mp4
 
 
