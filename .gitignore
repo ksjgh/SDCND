@@ -1,8 +1,9 @@
 *.ppt
 *.pptx
 *.pdf
-*.h5
 
 .ipynb_checkpoints/
+
+
 
 
