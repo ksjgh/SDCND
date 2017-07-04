@@ -56,7 +56,7 @@
 * validation set accuracy of 0.936
 * test set accuracy of 0.931
 
-####Visualizing the Neural Network
+#### Visualizing the Neural Network
 
 ##### Original Image
 ![Fig 1.](./feature_map_plots/test_image.png)
