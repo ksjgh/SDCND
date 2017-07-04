@@ -1,54 +1,85 @@
-## Project: Build a Traffic Sign Recognition Program
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-Overview
+# Self-Driving Car Engineer Nanodegree
+
+
+## Project : **Traffic Sign Classifier Using Deep Learning**
 ---
-In this project, you will use what you've learned about deep neural networks and convolutional neural networks to classify traffic signs. You will train and validate a model so it can classify traffic sign images using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). After the model is trained, you will then try out your model on images of German traffic signs that you find on the web.
+<br>
+<img src="./web_test_images/test01_c1.JPG" width="480" alt="Combined Image" />
+</br>
 
-We have included an Ipython notebook that contains further instructions 
-and starter code. Be sure to download the [Ipython notebook](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb). 
-
-We also want you to create a detailed writeup of the project. Check out the [writeup template](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup. The writeup can be either a markdown file or a pdf document.
-
-To meet specifications, the project will require submitting three files: 
-* the Ipython notebook with the code
-* the code exported as an html file
-* a writeup report either as a markdown or pdf file 
-
-Creating a Great Writeup
+### Prediction : 30 km/h
 ---
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/481/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
 
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
+## Overview
 
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
+### 1. Objective
+  - Build a program that classify German Traffic Sign using deep learning.
 
-The Project
----
-The goals / steps of this project are the following:
-* Load the data set
+### 2. Applied Techniques
+* Tensorflow for building neural network
+* Covolutional Neural Network(CNN) to implement classifier
+
+### 3. The goals / steps of this project
+* Load the traffic sign data set
 * Explore, summarize and visualize the data set
 * Design, train and test a model architecture
 * Use the model to make predictions on new images
 * Analyze the softmax probabilities of the new images
-* Summarize the results with a written report
 
-### Dependencies
-This lab requires:
+### 4. Result
+#### My final model consisted of the following layers:
 
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+| Layer         		|     Description	        					|
+|:---------------------:|:---------------------------------------------:|
+| Input          		| 32x32x3 RGB image   							|
+| Convolution      	| 5x5x3, 1x1 stride, same padding, outputs 28x28x10 	|
+| ReLU					|												|
+| pooling	      	| k=2 , 2x2 stride,  outputs 14x14x10 				|
+| Convolution 	    | 5x5x10, 1x1 stride, same padding, outputs 10x10x16|
+| ReLU					|												|
+| pooling	      	| k=2 , 2x2 stride,  outputs 5x5x16 				|
+| Fully connected		| Input = 400. Output = 120        									|
+| Fully connected		| Input = 120. Output = 84        									|
+| Fully connected		| Input = 84. Output = 43        									|
 
-The lab environment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
 
-### Dataset and Repository
+#### To train the model, I modified basic LeNet architecture and tweaked learning rate,epoch and batch size.
 
-1. Download the data set. The classroom has a link to the data set in the "Project Instructions" content. This is a pickled dataset in which we've already resized the images to 32x32. It contains a training, validation and test set.
-2. Clone the project, which contains the Ipython notebook and the writeup template.
-```sh
-git clone https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project
-cd CarND-Traffic-Sign-Classifier-Project
-jupyter notebook Traffic_Sign_Classifier.ipynb
-```
+* Increaseed depth of input convolution layer 6 to 10.
+* learning rate = 0.005
+* BATCH_SIZE = 256
+* EPOCHS = 50
 
-### Requirements for Submission
-Follow the instructions in the `Traffic_Sign_Classifier.ipynb` notebook and write the project report using the writeup template as a guide, `writeup_template.md`. Submit the project code and writeup document.
+#### My final model results were:
+* training set accuracy of 0.998
+* validation set accuracy of 0.936
+* test set accuracy of 0.931
+
+####Visualizing the Neural Network
+
+##### Original Image
+![Fig 1.](./feature_map_plots/test_image.png)
+
+##### Convolution Layer 1 feature maps
+![Fig 1.](./feature_map_plots/conv_layer1_feature_map.png)
+
+##### Convolution Layer 2 feature maps
+![Fig 1.](./feature_map_plots/conv_layer2_feature_map.png)
+---
+
+## Reflection
+
+### 1. Analyze visual output of trained network's feature maps
+* Automatic gray transform :  Convolution Layer 1 feature maps shows that this CNN is interested in shape and gradient of image.
+It looks like color is not so important. I can say CNN does gray transform from color image so there is no great reason to preprocess 'gray transforming'.
+
+* Disappearing circle shape in Convolution Layer 2 feature maps : In Convolution Layer 1 feature maps , I was able to see some circle shape but in layer 2, it's hard to say network detects circle shape.
+
+### 2. Improvements
+* Effect of overlaying feature maps : This is my later To-Do. It just occurred to me that overlaying some features maps together would be hepful.
+
+---
+
+## Code Impementation
+Ipython code is [here](https://github.com/ksjgh/SDCND/blob/master/Term1_Computer_Vision_and_Deep_Learning/02_Project_Traffic_Sign_Classifier/Traffic_Sign_Classifier.ipynb)
