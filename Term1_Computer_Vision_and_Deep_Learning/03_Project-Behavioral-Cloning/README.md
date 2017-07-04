@@ -3,7 +3,7 @@
 ### Self-Driving Car Engineer Nanodegree
 ---
 <br>
-<img src="center_sample.JPG" width="480" alt="Combined Image" />
+<img src="center_sample.jpg" width="480" alt="Combined Image" />
 
 ### Predicted Steering Angle  : +0.03 [rad]
 ---
