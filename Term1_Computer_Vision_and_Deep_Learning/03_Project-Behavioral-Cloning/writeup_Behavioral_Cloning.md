@@ -98,7 +98,7 @@ The final model architecture (model.py lines 37-58)
 
 
 |Layer (type)                     |Output Shape          |Param #     |Connected to                 |    
-|---------------------------------------------------------------------------------------------------|
+|---------------------------------|----------------------|------------|-----------------------------|
 |lambda_1 (Lambda)                |(None, 160, 320, 3)   |0           |lambda_input_1[0][0]            |
 |convolution2d_1 (Convolution2D)  |(None, 78, 158, 24)   |1824       | lambda_1[0][0]                  |
 |convolution2d_2 (Convolution2D)  |(None, 37, 77, 36)    |21636      | convolution2d_1[0][0]     |       
