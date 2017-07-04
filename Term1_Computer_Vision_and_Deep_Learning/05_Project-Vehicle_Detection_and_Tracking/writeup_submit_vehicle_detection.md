@@ -149,8 +149,8 @@ Finally I drew box on cars averaging previous six frames of detecting results to
 
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 I need to make smoother output heatmap result  and adjust heatmap threshold. But I didn't cause I realized this kind of approad is not a general solution. Althogh I made excellent tunning on project video, this don't guaratee it will give robust result. But doing this project , I've realized the power of machine learning approach. At first I tried to enhance detection ability by tunning color_histogram, HOG , spatial bin parameters.But I couln't get good result. But after I added fail case , performance was gradually enhanced. I think using CNN , RNN will give more general and robust solution because they don't need feature extraction.
