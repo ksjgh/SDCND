@@ -1,4 +1,4 @@
-Your px, py, vx, and vy RMSE should be less than or equal to the values  [.09, .10, .40, .30]
+px, py, vx, and vy RMSE should be less than or equal to the values  [.09, .10, .40, .30]
 
 # default
 std_a_ = 2.5;
