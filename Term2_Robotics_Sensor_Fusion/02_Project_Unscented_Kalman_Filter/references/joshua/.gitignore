@@ -1,8 +1,0 @@
-# silly macOS
-.DS_Store
-
-# build files
-build/
-
-# others
-.ipynb_checkpoints/
