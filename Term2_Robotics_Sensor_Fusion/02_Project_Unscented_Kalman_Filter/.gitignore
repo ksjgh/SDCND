@@ -7,7 +7,7 @@ references/
 #build dir
 build/
 
-
+*.zip
 
 # silly macOS
 .DS_Store
