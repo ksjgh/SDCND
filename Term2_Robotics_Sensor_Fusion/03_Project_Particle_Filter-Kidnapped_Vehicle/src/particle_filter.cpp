@@ -22,7 +22,7 @@
 
 using namespace std;
 
-static int MAX_PARTICLES = 60;
+static int MAX_PARTICLES = 80;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of
@@ -35,9 +35,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 
 	// Resize particles vector
 	particles.resize(num_particles);
-
-	// Resize weights vector
-	// weights.resize(num_particles);
 
 	// for random particle generation based on initial measurement
 	std::default_random_engine gen;
@@ -134,11 +131,21 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	weights.clear();
 	for(auto &p : particles) {
 
-		// filtering landmarks within sensor maesurement range
+		// // filtering landmarks within circle of sensor range
+		// vector<LandmarkObs> filtered_landmarks;
+    // for(const auto& lm: map_landmarks.landmark_list){
+    //   double distance = dist(p.x, p.y, lm.x_f, lm.y_f);
+    //   if( distance < sensor_range){
+    //     filtered_landmarks.push_back(LandmarkObs{lm.id_i, lm.x_f, lm.y_f});
+    //   }
+    // }
+
+		// filtering landmarks within sensor square range , for faster calculation
 		vector<LandmarkObs> filtered_landmarks;
-    for(const auto& lm: map_landmarks.landmark_list){
-      double distance = dist(p.x, p.y, lm.x_f, lm.y_f);
-      if( distance < sensor_range){
+
+		// select landmarks within square region of particle
+		for(const auto &lm: map_landmarks.landmark_list){
+      if( fabs(lm.x_f-p.x) < sensor_range && fabs(lm.y_f-p.y) < sensor_range){
         filtered_landmarks.push_back(LandmarkObs{lm.id_i, lm.x_f, lm.y_f});
       }
     }
@@ -176,29 +183,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	}
 }
 
-// void ParticleFilter::resample() {
-//
-//   // generate distribution according to weights
-//   std::random_device rd;
-//   std::mt19937 gen(rd());
-//   std::discrete_distribution<> dist(weights.begin(), weights.end());
-//
-//   // create resampled particles
-//   vector<Particle> resampled_particles;
-//   resampled_particles.resize(num_particles);
-//
-//   // resample the particles according to weights
-//   for(int i=0; i<num_particles; i++){
-//     int idx = dist(gen);
-//     resampled_particles[i] = particles[idx];
-//   }
-//
-//   // assign the resampled_particles to the previous particles
-//   particles = resampled_particles;
-//
-//   // clear the weight vector for the next round
-//   weights.clear();
-// }
 
 void ParticleFilter::resample() {
   // DONE: Resample particles with replacement with probability proportional to their weight.
