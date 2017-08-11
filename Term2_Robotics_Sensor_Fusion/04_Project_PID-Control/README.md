@@ -1,92 +1,71 @@
-# CarND-Controls-PID
-Self-Driving Car Engineer Nanodegree Program
+
+# Project : **PID Control**
+### Self-Driving Car Engineer Nanodegree
+---
+<br>
+<img src="./PID_Control.jpg" width="480" alt="Combined Image" />
 
 ---
 
-## Dependencies
+## Overview
 
-* cmake >= 3.5
- * All OSes: [click here for installation instructions](https://cmake.org/install/)
-* make >= 4.1
-  * Linux: make is installed by default on most Linux distros
-  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
-* gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
-  * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
-  * Windows: recommend using [MinGW](http://www.mingw.org/)
-* [uWebSockets](https://github.com/uWebSockets/uWebSockets)
-  * Run either `./install-mac.sh` or `./install-ubuntu.sh`.
-  * If you install from source, checkout to commit `e94b6e1`, i.e.
-    ```
-    git clone https://github.com/uWebSockets/uWebSockets 
-    cd uWebSockets
-    git checkout e94b6e1
-    ```
-    Some function signatures have changed in v0.14.x. See [this PR](https://github.com/udacity/CarND-MPC-Project/pull/3) for more details.
-* Simulator. You can download these from the [project intro page](https://github.com/udacity/self-driving-car-sim/releases) in the classroom.
+### 1. Objective
+  * Keep the car in the center of the track using PID control
 
-There's an experimental patch for windows in this [PR](https://github.com/udacity/CarND-PID-Control-Project/pull/3)
+### 2. Applied Techniques
+* C++
+* PID Controller design an gain tuning.
 
-## Basic Build Instructions
+### 3. The goals / steps of this project
+* Implement PID controller using C++
+* Tune the gain of controller by manual , SGD or other method to keep the car in the center of the track.
 
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./pid`. 
+### 4. Result
 
-## Editor Settings
+#### Result Video
+[VIDEO : PID control of the car](https://youtu.be/2lOEfyVJfe4)<br>
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+## Reflection
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+### 1. PID Gain tuning method
+* I tuned the gain  manually
+* Kp : proportional gain<br>
+  Ki : integration gain<br>
+  Kd : derivertive gain<br>
 
-## Code Style
+#### 1) Tune the gain in the straight course
+* Kp = -0.2 , Ki =0 , Kd =0<br>
+  : Car tries to track the center but off the track quickly with oscillation increasing(divergence).<br>
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+* Kp = -0.2 , Ki =0 , Kd =-1.0<br>
+  : Added and tuned Kd cause it improves reducing oscillation(damping).<br>
 
-## Project Instructions and Rubric
+* Kp = -0.2 , Ki =-0.0001 , Kd =-1.5<br>
+  : Added and tuned Ki cause it improves offset from center.<br>
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+* Showed good result in the straight course.<br>
 
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
+#### 2) Tune the gain in the curve.
+* Kp = -0.2 , Ki =-0.0001 , Kd =-1.5<br>
+  : used gain in step 1). Very unstable in the curve with large oscillation and overshoot.<br>
 
-## Hints!
+* Kp = -0.15 , Ki =-0.002 , Kd =-1.3<br>
+  : Decrease Kp , Kd to reduce oscillation and overshoot.<br>
+  : Increase Ki to reduce offset from the center.<br>
+  : Iterate this step.
 
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
+* Kp = -0.12 , Ki =-0.0015 , Kd =-1.0<br>
+  : Showed good result in all course.
 
-## Call for IDE Profiles Pull Requests
+### 2. Improvements
+* Need to control `throttle` to achieve more stability in the curve.<br>
+  But to do this, I need `predicted path data` from the simulator. Human get this data by watching the road and guessing the curvature.
+* Before using SGD or twiddle to find the best PID gain , we have to consider about `goodness` function.<br>
+In `goodness` function, we have to include `stability` or `comfortability`
+because control gain that gives large overshoot from the center is not good for human although it gives minimum `cross track error` on average.
 
-Help your fellow students!
+---
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
+---
+## Code Impementation is [here](https://github.com/ksjgh/SDCND/tree/master/Term2_Robotics_Sensor_Fusion/04_Project_PID-Control)
+---

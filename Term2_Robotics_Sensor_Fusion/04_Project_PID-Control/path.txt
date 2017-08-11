@@ -1,0 +1,6 @@
+cd /mnt/d/data/03_Learning/Autonomous_Robot/SDCND/Term2_Robotics_Sensor_Fusion/04_Project_PID-Control/build
+
+./pid -0.2 0 0
+
+## 1st good gain
+ ./pid -0.12 -0.0015 -1.0
