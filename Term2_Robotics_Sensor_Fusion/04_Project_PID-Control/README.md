@@ -3,7 +3,7 @@
 ### Self-Driving Car Engineer Nanodegree
 ---
 <br>
-<img src="./PID_Control.jpg" width="480" alt="Combined Image" />
+<img src="PID_Control.jpg" width="480" alt="Combined Image" />
 
 ---
 
