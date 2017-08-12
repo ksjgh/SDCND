@@ -28,15 +28,21 @@ std::string hasData(std::string s) {
   return "";
 }
 
-int main(int argc , char *argv[])
+// int main(int argc , char *argv[])
+int main() // for submit version
 {
   uWS::Hub h;
 
   PID pid;
   // TODO: Initialize the pid variable.
-  double init_Kp = std::atof(argv[1]);
-  double init_Ki = std::atof(argv[2]);
-  double init_Kd = std::atof(argv[3]);
+  // double init_Kp = std::atof(argv[1]);
+  // double init_Ki = std::atof(argv[2]);
+  // double init_Kd = std::atof(argv[3]);
+
+  // for submit verion , hard code final gain
+  double init_Kp = -0.12;
+  double init_Ki = -0.0015;
+  double init_Kd = -1.0;
 
   pid.Init(init_Kp, init_Ki, init_Kd);
 
@@ -53,8 +59,10 @@ int main(int argc , char *argv[])
         if (event == "telemetry") {
           // j[1] is the data JSON object
           double cte = std::stod(j[1]["cte"].get<std::string>());
-          double speed = std::stod(j[1]["speed"].get<std::string>());
-          double angle = std::stod(j[1]["steering_angle"].get<std::string>());
+
+          // for submit version , it gives 'compile warnings'
+          // double speed = std::stod(j[1]["speed"].get<std::string>());
+          // double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value;
           /*
           * TODO: Calcuate steering value here, remember the steering value is
