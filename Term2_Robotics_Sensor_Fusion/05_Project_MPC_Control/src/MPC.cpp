@@ -8,13 +8,18 @@ using CppAD::AD;
 // TODO: Set the timestep length and duration
 double Lf = 2.67;
 int dt = 150;
-// int dt = 50;
 size_t N = 10;
-// size_t N = 20;
 
-double ref_cte = 0;
-double ref_epsi = 0;
-double ref_v = 100;
+#define W_CTE 4000 //weight of 'cte' in cost
+#define W_EPSI 4000 //weight of 'epsi' in cost
+#define W_V 1.5 //weight of 'v' in cost
+#define W_DELTA 5000 //weight of 'delta' in cost
+#define W_A 5000 //weight of 'a' in cost
+#define W_DDELTA 200 //weight of 'change rate of delta' in cost
+#define W_DA 10 //weight of 'change rate of a' in cost
+const double ref_cte = 0;
+const double ref_epsi = 0;
+const double ref_v = 100;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -40,19 +45,19 @@ public:
     fg[0] = 0;
 
     for (int i = 0; i < N; i++) {
-      fg[0] += 4000*CppAD::pow(vars[cte_start + i] - ref_cte, 2);
-      fg[0] += 4000*CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
-      fg[0] += CppAD::pow(vars[v_start + i] - ref_v, 2);
+      fg[0] += W_CTE*CppAD::pow(vars[cte_start + i] - ref_cte, 2);
+      fg[0] += W_EPSI*CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
+      fg[0] += W_V*CppAD::pow(vars[v_start + i] - ref_v, 2);
     }
 
     for (int i = 0; i < N - 1; i++) {
-      fg[0] += 5000*CppAD::pow(vars[delta_start + i], 2);
-      fg[0] += 5000*CppAD::pow(vars[a_start + 1], 2);
+      fg[0] += W_DELTA*CppAD::pow(vars[delta_start + i], 2);
+      fg[0] += W_A*CppAD::pow(vars[a_start + 1], 2);
     }
 
     for (int i = 0; i < N - 2; i++) {
-      fg[0] += 200*CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
-      fg[0] += 10*CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
+      fg[0] += W_DDELTA*CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
+      fg[0] += W_DA*CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
     }
 
     fg[1 + x_start] = vars[x_start];
@@ -141,6 +146,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (int i = delta_start; i < a_start; i++) {
     vars_lowerbound[i] = -0.436332*Lf;
     vars_upperbound[i] = 0.436332*Lf;
+    // vars_lowerbound[i] = -0.436332;
+    // vars_upperbound[i] = 0.436332;
   }
 
   for (int i = a_start; i < n_vars; i++) {

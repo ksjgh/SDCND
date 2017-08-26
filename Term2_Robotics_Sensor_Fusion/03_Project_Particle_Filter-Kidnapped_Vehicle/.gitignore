@@ -9,6 +9,8 @@ build/
 
 *.zip
 
+src/particle_filter_org.cpp
+
 # silly macOS
 .DS_Store
 
