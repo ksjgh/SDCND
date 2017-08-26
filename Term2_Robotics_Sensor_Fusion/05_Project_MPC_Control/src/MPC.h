@@ -7,7 +7,7 @@
 using namespace std;
 
 extern double Lf;
-extern int dt;
+extern double dt;
 
 // This value assumes the model presented in the classroom is used.
 //
