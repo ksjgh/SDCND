@@ -10,16 +10,16 @@ double Lf = 2.67;
 double dt = 0.11;
 size_t N = 10;
 
-#define W_CTE 4000 //weight of 'cte' in cost
-#define W_EPSI 4000 //weight of 'epsi' in cost
-#define W_V 1.3 //weight of 'v' in cost
-#define W_DELTA 5000 //weight of 'delta' in cost
-#define W_A 5000 //weight of 'a' in cost
-#define W_DDELTA 200 //weight of 'change rate of delta' in cost
-#define W_DA 10 //weight of 'change rate of a' in cost
-const double ref_cte = 0;
-const double ref_epsi = 0;
-const double ref_v = 100;
+#define W_CTE 4000    // weight of 'cte' in cost
+#define W_EPSI 4000   // weight of 'epsi' in cost
+#define W_V 1.3       // weight of 'v' in cost
+#define W_DELTA 5000  // weight of 'delta' in cost
+#define W_A 5000      // weight of 'a' in cost
+#define W_DDELTA 200  // weight of 'change rate of delta' in cost
+#define W_DA 10       // weight of 'change rate of a' in cost
+const double ref_cte = 0;   // target 'cte'
+const double ref_epsi = 0;  // target 'epsi'
+const double ref_v = 100;   // target 'velocity'
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -42,7 +42,7 @@ public:
     // `fg` a vector of the cost constraints, `vars` is a vector of variable values (state & actuators)
     // NOTE: You'll probably go back and forth between this function and
     // the Solver function below.
-    fg[0] = 0;
+    fg[0] = 0; // cost , f in Ipopt
 
     for (size_t i = 0; i < N; i++) {
       fg[0] += W_CTE*CppAD::pow(vars[cte_start + i] - ref_cte, 2);
@@ -146,8 +146,6 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (size_t i = delta_start; i < a_start; i++) {
     vars_lowerbound[i] = -0.436332*Lf;
     vars_upperbound[i] = 0.436332*Lf;
-    // vars_lowerbound[i] = -0.436332;
-    // vars_upperbound[i] = 0.436332;
   }
 
   for (size_t i = a_start; i < n_vars; i++) {
@@ -214,7 +212,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   if (cost > max_cost) { max_cost = cost; }
   sum_cost += cost;
   cnt2++;
-  std::cout << "AvgCost(max): " << sum_cost/cnt2 << "(" << max_cost << ")" << std::endl;
+
   // TODO: Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
   //

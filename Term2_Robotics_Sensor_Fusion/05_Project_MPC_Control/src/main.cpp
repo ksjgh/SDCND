@@ -105,7 +105,6 @@ int main() {
           if (v > max_speed) { max_speed = v; }
           sum_speed += v;
           cnt++;
-          std::cout << "AvgSpeed(max): " << sum_speed/cnt << "(" << max_speed << ")\t\t\t";
 
           // convert waypoints to car's coordinate
           // In car's coordinate , car is px=0, py=0, psi=0
@@ -134,20 +133,8 @@ int main() {
           // In car's coordinate , car is px=0, py=0, psi=0
           double epsi = -atan(coeffs[1]);  //-f'(0)
 
-          // estimate delayed state by control latency(default LATENCY = 100ms)
-          // double px_dt = v * dt;
-          // double py_dt = 0.0;
-          // double psi_dt = - v * steer_value * dt / Lf;
-          // double v_dt = v + throttle_value * dt;
-          // double cte_dt = cte + v * sin(epsi) * dt;
-          // double epsi_dt = epsi + psi_dt;
-          //
-          // Eigen::VectorXd state(6);
-          // state << px_dt, py_dt, psi_dt,
-          //          v_dt, cte_dt, epsi_dt;
-
-          double delay = LATENCY/1000.0; // convert to milliseconds
-          // cout << "delay =" << delay << endl; //debug
+          // estimate delayed state by control latency(LATENCY = 100ms)
+          double delay = LATENCY/1000.0; // convert to seconds
           double px_delayed = v * delay;
           double py_delayed = 0.0;
           double psi_delayed = - v * steer_value * delay / Lf;
@@ -197,7 +184,6 @@ int main() {
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
           msgJson["steering_angle"] = vars[0]/(deg2rad(25)*Lf);
-          // msgJson["steering_angle"] = vars[0]/deg2rad(25);
           msgJson["throttle"] = vars[1];
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
