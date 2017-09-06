@@ -4,6 +4,9 @@
 ---
 <br>
 <img src="PID_control.jpg" width="480" alt="Combined Image" />
+
+<br>
+<img src="./PID_control.jpg" width="960" alt="Combined Image" />
 ---
 
 
