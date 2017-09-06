@@ -1,5 +1,5 @@
 
-# Project : **MPC Reflection**
+# Project : **MPC(Model Predictive Control)**
 ### Self-Driving Car Engineer Nanodegree
 ---
 
@@ -166,4 +166,4 @@ delayed_state << px_delayed, py_delayed, psi_delayed,
 ### 5.Further Improvements
 * I think N&dt should be changed dynamically related to velocity and enviroment complexity.<br>
 
-* Applying Reinforcement Learning can be a good try.
+* Applying Reinforcement Learning can be next project.
