@@ -9,16 +9,19 @@
 
 ## Overview
 
-### 1. Objective
-  * Keep the car in the center of the track using PID control
+### 1. Goals
+  * Keep the car in the center of the track using PID control<br>
+
+  _Note : The simulator provide program the cross track error (CTE) and the velocity (mph).<br>
+  Program compute the appropriate steering angle to keep the car in the center using PID controller._
 
 ### 2. Applied Techniques
 * C++
 * PID Controller design an gain tuning.
 
-### 3. The goals / steps of this project
+### 3. The steps of this project
 * Implement PID controller using C++
-* Tune the gain of controller by manual , SGD or other method to keep the car in the center of the track.
+* Tune the gain of controller using manual, twiddle, SGD or other method.
 
 ### 4. Result
 
@@ -58,6 +61,7 @@
   : Showed good result in all course.
 
 ### 2. Improvements
+* Need to consider **control latency**.<br>
 * Need to control `throttle` to achieve more stability in the curve.<br>
   But to do this, I need `predicted path data` from the simulator. Human get this data by watching the road and guessing the curvature.
 * Before using SGD or twiddle to find the best PID gain , we have to consider about `goodness` function.<br>
