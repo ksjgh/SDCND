@@ -15,17 +15,15 @@
 #### 1. Goals
   * Keep the car in the center of the track using MPC<br>
 
-  Note : The simulator provide program<br>
+  _Note : The simulator provide program<br>
   px : x-position<br>
   py : y-position<br>
   psi : steering angle<br>
-  v : velocity<br>
-  cte : cross track error from reference trajectory<br>
-  epsi : error of psi with tangential of reference trajectory<br>
+  v : velocity<br>_
 
-  Program compute the actuator's<br>
+  _Program compute the actuator's<br>
   delta : steering angle<br>
-  a : acceleration or deceleration<br>
+  a : acceleration or deceleration<br>_
 
 #### 2. Applied Techniques
 * C++ , Ipopt & CppAD library
