@@ -1,5 +1,5 @@
 
-# Project : **Extended Kalman Filter**
+# Project : **Unscented Kalman Filter**
 ### Self-Driving Car Engineer Nanodegree
 ---
 <img src="./report_data/EKF.PNG" width="480" alt="Combined Image" />
