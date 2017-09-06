@@ -4,6 +4,8 @@
 ---
 <br>
 <img src="./report_images/PID_control.jpg" width="480" alt="Combined Image" />
+
+#### Result Video  [PID control of the car](https://youtu.be/2lOEfyVJfe4)<br>
 ---
 
 
@@ -22,11 +24,6 @@
 ### 3. The steps of this project
 * Implement PID controller using C++
 * Tune the gain of controller using manual, twiddle, SGD or other method.
-
-### 4. Result
-
-#### Result Video
-[VIDEO : PID control of the car](https://youtu.be/2lOEfyVJfe4)<br>
 
 ## Reflection
 
@@ -67,8 +64,6 @@
 * Before using SGD or twiddle to find the best PID gain , we have to consider about `goodness` function.<br>
 In `goodness` function, we have to include `stability` or `comfortability`
 because control gain that gives large overshoot from the center is not good for human although it gives minimum `cross track error` on average.
-
----
 
 ---
 ## Code Impementation is [here](https://github.com/ksjgh/SDCND/tree/master/Term2_Robotics_Sensor_Fusion/04_Project_PID-Control)
