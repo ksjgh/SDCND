@@ -13,6 +13,10 @@
 
  #### <span style="color:green"> *Green dots* </span> : Estimated position , output of EKF
 
+![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Red dots : Noisy LiDAR data , input to EKF<br>
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Blue dots : Noisy Radar data , input to EKF<br>
+![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green dots : Estimated position , output of EKF
+
 ---
 
 ## Overview
@@ -21,15 +25,15 @@
   * Utilize EKF(extended kalman filter) to estimate the state of a moving object with noisy lidar and radar measurements.<br>
   * Obtain low RMSE(Root Mean Square Error) values.<br>
 
-  _Note :<br>
+  *Note :<br>
   The simulator provide program <br>
   1) Noisy Rada sensor data.<br>
-  2) Noisy LiDAR sensor data.<br>_
+  2) Noisy LiDAR sensor data.<br>*
 
-  _Program estimate<br>
+  *Program estimate<br>
   1) current position : x, y<br>
   2) current velocity : vx, vy<br>
-  3) RSME of x, y, vx, vy_<br>
+  3) RSME of x, y, vx, vy<br>*
 
 ### 2. Applied Techniques
 * Linearization of Rada sensor data
