@@ -3,12 +3,12 @@
 ---
 
 <br>
-<img src="./reflection_img/MPC_Project.PNG" width="480" alt="Combined Image" />
+<img src="./reflection_img/MPC_Project.PNG" width="960" alt="Combined Image" />
 
-#### Follow reference trajectory(![#ffff00](https://placehold.it/15/ffff00/000000?text=+)) using MPC(Model Predictive Control)
+## Follow reference trajectory(![#ffff00](https://placehold.it/15/ffff00/000000?text=+)) using MPC(Model Predictive Control)
 
-![#ffff00](https://placehold.it/15/ffff00/000000?text=+) Yellow line : reference trajectory to follow , input to MPC<br>
-![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green line : calculated trajectory , output of MPC<br>
+![#ffff00](https://placehold.it/15/ffff00/000000?text=+) Yellow line : Reference trajectory to follow , input to MPC<br>
+![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green line : Calculated trajectory including constrains<br>
 
 #### Result Video - [ MPC(Model Predictive control) of the car](https://youtu.be/giFZAdzGf6o)<br>
 ---

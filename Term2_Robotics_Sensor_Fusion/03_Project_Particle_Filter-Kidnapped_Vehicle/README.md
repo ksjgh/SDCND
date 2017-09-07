@@ -4,7 +4,7 @@
 <img src="./report_data/particle_filter.PNG" width="960" alt="Combined Image" />
 
 
-#### Localize vehicle in the map using particle filter
+## Localize vehicle in the map using particle filter
 ![#000000](https://placehold.it/15/000000/000000?text=+) Black Circles : Landmarks in the given map , input to particle filter<br>
 ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green Line : Show detected landmarks by particle<br>
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Blue Circle : Estimated position of vehicle by particle filter , output<br>

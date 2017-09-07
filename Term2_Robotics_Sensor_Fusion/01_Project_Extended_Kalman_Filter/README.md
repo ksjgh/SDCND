@@ -1,9 +1,9 @@
 
-# Project : **Unscented Kalman Filter**
+# Project : **Extended Kalman Filter**
 ---
 <img src="./report_data/EKF.PNG" width="960" alt="Combined Image" />
 
-#### Estimate vehicle's position(state) using EKF
+## Estimate vehicle's position(state) using EKF
 ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Red dots : Noisy LiDAR data , input to EKF<br>
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Blue dots : Noisy Radar data , input to EKF<br>
 ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green triangles : Estimated position , output of EKF

@@ -4,7 +4,7 @@
 <br>
 <img src="./report_images/PID_control.jpg" width="960" alt="Combined Image" />
 
-#### Control the car using PID controller<br>
+## Control the car using PID controller<br>
 - Input : Position error from center of track
 - Output : Steering angle
 
