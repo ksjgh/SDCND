@@ -1,7 +1,7 @@
 
 # Project : **Particle Filter**
 ---
-<img src="./report_data/particle_filter.PNG" width="480" alt="Combined Image" />
+<img src="./report_data/particle_filter.PNG" width="960" alt="Combined Image" />
 
 #### Result Video Link - [Particle Filter](https://youtu.be/mXSa4lwoU3Q)<br>
 
