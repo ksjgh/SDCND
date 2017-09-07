@@ -1,13 +1,16 @@
 
 # Project : **MPC(Model Predictive Control)**
-### Self-Driving Car Engineer Nanodegree
 ---
 
 <br>
 <img src="./reflection_img/MPC_Project.PNG" width="480" alt="Combined Image" />
 
-#### Result Video [ MPC(Model Predictive control) of the car](https://youtu.be/giFZAdzGf6o)<br>
+#### Follow reference trajectory(![#ffff00](https://placehold.it/15/ffff00/000000?text=+)) using MPC(Model Predictive Control)
 
+![#ffff00](https://placehold.it/15/ffff00/000000?text=+) Yellow line : reference trajectory to follow , input to MPC<br>
+![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green line : calculated trajectory , output of MPC<br>
+
+#### Result Video - [ MPC(Model Predictive control) of the car](https://youtu.be/giFZAdzGf6o)<br>
 ---
 
 ### 0. Overview<br>

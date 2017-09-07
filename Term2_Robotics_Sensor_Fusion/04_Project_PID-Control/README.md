@@ -1,14 +1,16 @@
 
 # Project : **PID Control**
-### Self-Driving Car Engineer Nanodegree
 ---
 <br>
-<img src="./report_images/PID_control.jpg" width="480" alt="Combined Image" />
+<img src="./report_images/PID_control.jpg" width="960" alt="Combined Image" />
 
-#### Result Video  [PID control of the car](https://youtu.be/2lOEfyVJfe4)<br>
+#### Control the car using PID controller<br>
+- Input : Position error from center of track
+- Output : Steering angle
+
+#### Result Video - [PID control of the car](https://youtu.be/2lOEfyVJfe4)<br>
+
 ---
-
-
 ## Overview
 
 ### 1. Goals

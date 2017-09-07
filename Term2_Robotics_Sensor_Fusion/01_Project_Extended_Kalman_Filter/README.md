@@ -1,15 +1,14 @@
 
 # Project : **Unscented Kalman Filter**
-### Self-Driving Car Engineer Nanodegree
 ---
-<img src="./report_data/EKF.PNG" width="480" alt="Combined Image" />
+<img src="./report_data/EKF.PNG" width="960" alt="Combined Image" />
 
-#### Result Video Link  [Extended Kalman Filter](https://youtu.be/AxB2kRkKnU4)<br>
-
+#### Estimate vehicle's position(state) using EKF
 ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Red dots : Noisy LiDAR data , input to EKF<br>
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Blue dots : Noisy Radar data , input to EKF<br>
-![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green dots : Estimated position , output of EKF
+![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green triangles : Estimated position , output of EKF
 
+#### Result Video Link - [Extended Kalman Filter](https://youtu.be/AxB2kRkKnU4)<br>
 ---
 
 ## Overview
@@ -30,9 +29,8 @@
   3) RSME of x, y, vx, vy*<br>
 
 ### 2. Applied Techniques
-* Linearization of Rada sensor data
+* Linearization of Radar sensor data for kalman fiter
 * Sensor data coordinate transform
-* Extended Kalman Filter
 * C++ , Eigen Library(for vector, matrix manipulation)
 
 ### 3. Result

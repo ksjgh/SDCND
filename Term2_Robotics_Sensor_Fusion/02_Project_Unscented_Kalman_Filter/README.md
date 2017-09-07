@@ -1,15 +1,15 @@
 
 # Project : **Unscented Kalman Filter**
-### Self-Driving Car Engineer Nanodegree
 ---
-<img src="./report_data/UKF.PNG" width="480" alt="Combined Image" />
+<img src="./report_data/UKF.PNG" width="960" alt="Combined Image" />
 
-#### Result Video Link  [Unscented Kalman Filter](https://youtu.be/Rwtg0_52t1c)<br>
 
+#### Estimate vehicle's position(state) using UKF
 ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Red dots : Noisy LiDAR data , input to UKF<br>
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Blue dots : Noisy Radar data , input to UKF<br>
-![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green dots : Estimated position , output of UKF<br>
+![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Green triangles : Estimated position , output of UKF<br>
 
+#### Result Video Link  [Unscented Kalman Filter](https://youtu.be/Rwtg0_52t1c)<br>
 ---
 
 ## Overview
