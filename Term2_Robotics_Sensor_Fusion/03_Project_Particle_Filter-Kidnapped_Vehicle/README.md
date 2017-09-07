@@ -17,16 +17,16 @@
   * Utilize particle filter to localize a moving object from blind start.<br>
   * Obtain low RMSE(Root Mean Square Error) of vehicle position(x,y) and heading direction(yaw).<br>
 
-  *Note :<br>
+  _Note :<br>
   The simulator provide program <br>
   1) Initial GPS measurement.<br>
   2) Observed distance to each landmarks.<br>
-  3) Vehicle control data<br>*
-  
-  *Program compute<br>
+  3) Vehicle control data_<br>
+
+  _Program compute<br>
   1) current position : x, y<br>
   2) current direction : yaw<br>
-  3) RSME of x, y, yaw<br>*
+  3) RSME of x, y, yaw_<br>
 
 ### 2. Applied Techniques
 * Motion Models : constant turn rate and velocity magnitude model (CTRV) of vehicle is used for motion update process.
