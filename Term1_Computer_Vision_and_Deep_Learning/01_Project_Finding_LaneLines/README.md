@@ -1,10 +1,7 @@
 
-# Self-Driving Car Engineer Nanodegree
+# Project: **Finding Lane Lines on the Road**
 
-
-## Project: **Finding Lane Lines on the Road**
-
-<img src="laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
+<img src="laneLines_thirdPass.jpg" width="960" alt="Combined Image" />
 
 ---
 ## Overview

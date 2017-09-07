@@ -1,20 +1,25 @@
 
-# Project : **Behavioral Cloning**
-### Self-Driving Car Engineer Nanodegree
+# Project : **Behavioral Cloning Using Deep Learning**
 ---
 <br>
-<img src="center_sample.jpg" width="480" alt="Combined Image" />
+<img src="center_sample.jpg" width="960" alt="Combined Image" />
 
-### Predicted Steering Angle  : +0.03 [rad]
+## Learn how to drive from human , then drive autonomously
+* Input  : Image from camera
+* Output : Steering angle to control the vehicle to follow the track
+
+#### Result Video Link - [Behavioral Cloning Using Deep Learning](https://www.youtube.com/watch?v=-jkfagvO4VQ)<br>
+
+
 ---
 
 ## Overview
 
 ### 1. Objective
-  * Let the car learn how to drive the track watching how human drivers
+  * Let the car learn how to drive the track watching how human drivers do
   * After learning, car simply sees the image and decide the steering angle of handle to drive inside the track
   <br><br>
-  _Note : This project was done in simulator provided by Udacity._
+  _Note : This project was done in a simulator provided by Udacity._
 
 ### 2. Applied Techniques
 * Keras/Tensorflow for building neural network

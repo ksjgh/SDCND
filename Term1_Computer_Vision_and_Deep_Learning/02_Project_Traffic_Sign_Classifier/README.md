@@ -1,14 +1,12 @@
 
-# Self-Driving Car Engineer Nanodegree
-
-
-## Project : **Traffic Sign Classifier Using Deep Learning**
+# Project : **Traffic Sign Classifier Using Deep Learning**
 ---
 <br>
 <img src="./web_test_images/test01_c1.JPG" width="480" alt="Combined Image" />
 </br>
 
-### Prediction : 30 km/h
+#### Input : Traffic sign image
+#### Ouput : Predicted class(e.g. : 30 km/h)
 ---
 
 ## Overview

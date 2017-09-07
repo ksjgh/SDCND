@@ -1,10 +1,14 @@
 
 # Project : **Advanced Lane Finding**
-### Self-Driving Car Engineer Nanodegree
 ---
 <br>
-<img src="./output_images/output_36_1.png" width="480" alt="Combined Image" />
+<img src="./output_images/output_36_1.png" width="960" alt="Combined Image" />
 
+## Find drivable lane area from road image
+* Input : Video stream
+* Output : Founded lane area video
+
+#### Result Video Link - [Advanced Lane Finding](https://www.youtube.com/watch?v=gUkVRg-zaJU)<br>
 ---
 
 ## Overview
@@ -20,6 +24,7 @@
 * Binary thresholding on image
 * Sliding windows to find lane line
 * Polynomial fitting
+* Python 3.5 , OpenCV
 
 ### 3. The goals / steps of this project
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
