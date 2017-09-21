@@ -8,6 +8,7 @@
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
+#include "spline.h"
 
 using namespace std;
 
@@ -199,6 +200,13 @@ int main() {
   	map_waypoints_dy.push_back(d_y);
   }
 
+  // // start in lane 1
+  // int lane = 1;
+  //
+  // // reference velocity to target
+  // double ref_vel = 49.5; // mph
+
+
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -244,43 +252,163 @@ int main() {
 
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+            // start in lane 1
+            int lane = 1;
 
-            // circular motion
-            double pos_x;
-            double pos_y;
-            double angle;
-            int path_size = previous_path_x.size();
+            // reference velocity to target
+            double ref_vel = 49.5; // mph
+            
+            // follow lane with smoothed line
+            int prev_size = previous_path_x.size();
 
-            for(int i = 0; i < path_size; i++)
+            // Create al list of widely spaced (x,y) waypoints, evenly spaced at 30m
+            // Later we will interplolate these waypoints with a spline and ffill it int with more points thate constrol spline
+
+            vector<double> ptsx, ptsy;
+
+            // we will reference the starting point as where the car is or at the previous paths end point
+            double ref_x = car_x;
+            double ref_y = car_y;
+            double ref_yaw = deg2rad(car_yaw);
+
+            // if previous size is almost empty, use the car as starting reference
+            if(prev_size < 2)
             {
-                next_x_vals.push_back(previous_path_x[i]);
-                next_y_vals.push_back(previous_path_y[i]);
-            }
+              // Use two points that make the path tangent to the car
+              double prev_car_x = car_x - cos(car_yaw);
+              double prev_car_y = car_y - sin(car_yaw);
 
-            if(path_size == 0)
-            {
-                pos_x = car_x;
-                pos_y = car_y;
-                angle = deg2rad(car_yaw);
+              ptsx.push_back(prev_car_x);
+              ptsx.push_back(car_x);
+
+              ptsy.push_back(prev_car_y);
+              ptsy.push_back(car_y);
+
             }
+            // use the previous path's end point as starting reference
             else
             {
-                pos_x = previous_path_x[path_size-1];
-                pos_y = previous_path_y[path_size-1];
+              // redefine reference state as previous path end point
+              ref_x = previous_path_x[prev_size-1];
+              ref_y = previous_path_y[prev_size-1];
 
-                double pos_x2 = previous_path_x[path_size-2];
-                double pos_y2 = previous_path_y[path_size-2];
-                angle = atan2(pos_y-pos_y2,pos_x-pos_x2);
+              double ref_x_prev = previous_path_x[prev_size-2];
+              double ref_y_prev = previous_path_y[prev_size-2];
+              ref_yaw = atan2( ref_y - ref_y_prev, ref_x - ref_x_prev);
+
+              // Use tow points that make the path tangent to the previous path's end points
+              ptsx.push_back(ref_x_prev);
+              ptsx.push_back(ref_x);
+
+              ptsy.push_back(ref_y_prev);
+              ptsy.push_back(ref_y);
             }
 
-            double dist_inc = 0.5;
-            for(int i = 0; i < 50-path_size; i++)
+            //In Frenet add evenly 30m spaced points ahead of the starting reference
+            vector<double> next_wp0 = getXY(car_s+30, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp1 = getXY(car_s+60, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp2 = getXY(car_s+90, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+
+            ptsx.push_back(next_wp0[0]);
+            ptsx.push_back(next_wp1[0]);
+            ptsx.push_back(next_wp2[0]);
+
+            ptsy.push_back(next_wp0[1]);
+            ptsy.push_back(next_wp1[1]);
+            ptsy.push_back(next_wp2[1]);
+
+            // change to car's local coordinates for easy math
+            for(int i=0; i < ptsx.size(); i++)
             {
-                next_x_vals.push_back(pos_x+(dist_inc)*cos(angle+(i+1)*(pi()/100)));
-                next_y_vals.push_back(pos_y+(dist_inc)*sin(angle+(i+1)*(pi()/100)));
-                pos_x += (dist_inc)*cos(angle+(i+1)*(pi()/100));
-                pos_y += (dist_inc)*sin(angle+(i+1)*(pi()/100));
+              double shift_x = ptsx[i] - ref_x;
+              double shift_y = ptsy[i] - ref_y;
+
+              ptsx[i] = (shift_x * cos(0-ref_yaw) - shift_y*sin(0-ref_yaw));
+              ptsy[i] = (shift_x * sin(0-ref_yaw) + shift_y*cos(0-ref_yaw));
             }
+
+            // create a spline
+            tk::spline s;
+
+            // set(x,y) points to the spline ( check if `ptsx` sorted )
+            s.set_points(ptsx,ptsy);
+
+            // Start with all of the previous path points from last time
+            for(int i=0; i < previous_path_x.size(); i++)
+            {
+              next_x_vals.push_back(previous_path_x[i]);
+              next_y_vals.push_back(previous_path_y[i]);
+
+            }
+
+            // calculate how to break up spline points so that we travel at our desired reference velocity
+            double target_x = 30.0;
+            double target_y = s(target_x);
+            double target_dist = distance(target_x,target_y,0,0);
+            double N = (target_dist/(.02 * ref_vel/2.24)); // 2.24 [mph]->[m/s]
+            double x_delta = target_x/N;
+            double x_prev = 0;
+
+            // Fill up the rest of our path Planner after filling it with previous points
+            for(int i=0; i <= 50 - previous_path_x.size(); i++)
+            {
+              // get each (x,y) point in spline
+              double x_point = x_prev + x_delta;
+              double y_point = s(x_point);
+
+              x_prev = x_point;
+
+              double x_ref = x_point;
+              double y_ref = y_point;
+
+              //rotate & shift , for back to global coordinates
+              x_point = (x_ref*cos(ref_yaw) - y_ref*sin(ref_yaw));
+              y_point = (x_ref*sin(ref_yaw) + y_ref*cos(ref_yaw));
+
+              x_point += ref_x;
+              y_point += ref_y;
+
+              // save to trajectory
+              next_x_vals.push_back(x_point);
+              next_y_vals.push_back(y_point);
+            }
+
+            // // circular motion
+            // double pos_x;
+            // double pos_y;
+            // double angle;
+            // int path_size = previous_path_x.size();
+            //
+            // for(int i = 0; i < path_size; i++)
+            // {
+            //     next_x_vals.push_back(previous_path_x[i]);
+            //     next_y_vals.push_back(previous_path_y[i]);
+            // }
+            //
+            // if(path_size == 0)
+            // {
+            //     pos_x = car_x;
+            //     pos_y = car_y;
+            //     angle = deg2rad(car_yaw);
+            // }
+            // else
+            // {
+            //     pos_x = previous_path_x[path_size-1];
+            //     pos_y = previous_path_y[path_size-1];
+            //
+            //     double pos_x2 = previous_path_x[path_size-2];
+            //     double pos_y2 = previous_path_y[path_size-2];
+            //     angle = atan2(pos_y-pos_y2,pos_x-pos_x2);
+            // }
+            //
+            // double dist_inc = 0.5;
+            // for(int i = 0; i < 50-path_size; i++)
+            // {
+            //     next_x_vals.push_back(pos_x+(dist_inc)*cos(angle+(i+1)*(pi()/100)));
+            //     next_y_vals.push_back(pos_y+(dist_inc)*sin(angle+(i+1)*(pi()/100)));
+            //     pos_x += (dist_inc)*cos(angle+(i+1)*(pi()/100));
+            //     pos_y += (dist_inc)*sin(angle+(i+1)*(pi()/100));
+            // }
 
             //end
 
