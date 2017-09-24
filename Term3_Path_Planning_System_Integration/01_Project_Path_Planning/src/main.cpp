@@ -163,6 +163,12 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 
 }
 
+// start in lane 1
+int lane = 1;
+
+// reference velocity to target
+double ref_vel = 0; // mph
+
 int main() {
   uWS::Hub h;
 
@@ -199,12 +205,6 @@ int main() {
   	map_waypoints_dx.push_back(d_x);
   	map_waypoints_dy.push_back(d_y);
   }
-
-  // // start in lane 1
-  // int lane = 1;
-  //
-  // // reference velocity to target
-  // double ref_vel = 49.5; // mph
 
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
@@ -252,15 +252,74 @@ int main() {
 
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-            // start in lane 1
-            int lane = 1;
+            // // start in lane 1
+            // int lane = 1;
+            //
+            // // reference velocity to target
+            // double ref_vel = 49.5; // mph
 
-            // reference velocity to target
-            double ref_vel = 49.5; // mph
-            
             // follow lane with smoothed line
             int prev_size = previous_path_x.size();
 
+            //------------------------------------------------------------------
+            // check for collision with front car
+            //------------------------------------------------------------------
+
+            if(prev_size > 0)
+            {
+              car_s = end_path_s;
+            }
+
+            bool too_close = false;
+
+            // find ref_v to use
+            for(int i=0; i < sensor_fusion.size(); i++)
+            {
+              // find car in my lane
+              float d = sensor_fusion[i][6];
+              if( d < (2+4*lane+2) && d > (2+4*lane-2) )
+              {
+                double vx = sensor_fusion[i][3];
+                double vy = sensor_fusion[i][4];
+                double check_speed = sqrt(vx*vx + vy*vy);
+                double check_car_s = sensor_fusion[i][5];
+
+                // other car's expected postion at horizon
+                check_car_s += ( (double)prev_size*0.02*check_speed );
+                double front_s_gap = check_car_s - car_s;
+
+                //debug
+                cout << "front_s_gap = " << front_s_gap << endl;
+                //debug end
+
+                if( (front_s_gap > 0) && ( front_s_gap < 30) )
+                {
+                  // ref_vel = 29.5; // mph
+                  too_close = true;
+                  if(lane > 0)
+                  {
+                    lane = 0;
+                  }
+                }
+
+              }
+            }
+
+            if(too_close)
+            {
+              ref_vel -= 0.224; // decrease 1 [m/s]
+            }
+            else if( ref_vel < 49.5)
+            {
+              ref_vel += 0.224;// increase 1 [m/s]
+            }
+
+            //------------------------------------------------------------------
+            // check for collision end
+            //------------------------------------------------------------------
+
+
+            // -----------------------------------------------------------------
             // Create al list of widely spaced (x,y) waypoints, evenly spaced at 30m
             // Later we will interplolate these waypoints with a spline and ffill it int with more points thate constrol spline
 
@@ -270,6 +329,17 @@ int main() {
             double ref_x = car_x;
             double ref_y = car_y;
             double ref_yaw = deg2rad(car_yaw);
+
+            // //debug
+            // cout << "--------------- New loop ------------------------"<<endl;
+            // cout << "previous_path_x.size = " << prev_size <<endl;
+            // cout << "car_x , car_y = " << car_x << ","<< car_y <<endl;
+            // cout << "previous_path_x.begin() , previous_path_y.begin() = "
+            //     //  << previous_path_x.begin() << ","<< previous_path_y.begin() <<endl;
+            //      << previous_path_x[0] << ","<< previous_path_y[0] <<endl;
+            // cout << "previous_path_x.end() , previous_path_y.end() = "
+            //      << previous_path_x[prev_size-1] << ","<< previous_path_y[prev_size-1] <<endl;
+            // //end debug
 
             // if previous size is almost empty, use the car as starting reference
             if(prev_size < 2)
@@ -288,6 +358,17 @@ int main() {
             // use the previous path's end point as starting reference
             else
             {
+              //debug
+              cout << "--------------- New loop ------------------------"<<endl;
+              cout << "previous_path_x.size = " << prev_size <<endl;
+              cout << "car_x , car_y = " << car_x << ","<< car_y <<endl;
+              cout << "previous_path_x.begin() , previous_path_y.begin() = "
+                  //  << previous_path_x.begin() << ","<< previous_path_y.begin() <<endl;
+                   << previous_path_x[0] << ","<< previous_path_y[0] <<endl;
+              cout << "previous_path_x.end() , previous_path_y.end() = "
+                   << previous_path_x[prev_size-1] << ","<< previous_path_y[prev_size-1] <<endl;
+              //end debug
+
               // redefine reference state as previous path end point
               ref_x = previous_path_x[prev_size-1];
               ref_y = previous_path_y[prev_size-1];
@@ -317,7 +398,7 @@ int main() {
             ptsy.push_back(next_wp1[1]);
             ptsy.push_back(next_wp2[1]);
 
-            // change to car's local coordinates for easy math
+            // convert global coordinates into car's local coordinates for easy math
             for(int i=0; i < ptsx.size(); i++)
             {
               double shift_x = ptsx[i] - ref_x;
@@ -372,6 +453,10 @@ int main() {
               next_x_vals.push_back(x_point);
               next_y_vals.push_back(y_point);
             }
+
+            //debug
+            cout << "next_x_vals.size = " << next_x_vals.size() << endl;
+            //end debug
 
             // // circular motion
             // double pos_x;
