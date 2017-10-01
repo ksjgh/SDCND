@@ -7,9 +7,6 @@ references/
 #build dir
 build/
 
-#Quizz
-CarND-MPC-Quizzes-master/
-
 *.zip
 
 temp_path_result.txt
@@ -17,8 +14,6 @@ temp_path_result.txt
 # silly macOS
 .DS_Store
 
-# build files
-build/
 
 # editor config
 .vscode/

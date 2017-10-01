@@ -7,10 +7,22 @@
 #include <vector>
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
+#include "Eigen-3.3/Eigen/Dense"
 #include "json.hpp"
 #include "spline.h"
 
+// define
+#define SF_IDX_VX = 3; // cf.) float vx = sensor_fusion[i][SF_IDX_D]
+#define SF_IDX_VY = 4; // cf.) float vy = sensor_fusion[i][SF_IDX_D]
+#define SF_IDX_S  = 5; // cf.) float s = sensor_fusion[i][SF_IDX_D]
+#define SF_IDX_D  = 6; // cf.) float d = sensor_fusion[i][SF_IDX_D]
+
+#define SAFE_FRONT_GAP = 30; // safe distance to front car
+
+
 using namespace std;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 // for convenience
 using json = nlohmann::json;
@@ -273,33 +285,40 @@ int main() {
             bool too_close = false;
 
             // find ref_v to use
+            VectorXd vec_goal = VectorXd(2);
+            vec_goal << SAFE_FRONT_GAP,0;
+            VectorXd vec_front_car = VectorXd(2);
+
             for(int i=0; i < sensor_fusion.size(); i++)
             {
               // find car in my lane
-              float d = sensor_fusion[i][6];
+              float d = sensor_fusion[i][SF_IDX_D];
               if( d < (2+4*lane+2) && d > (2+4*lane-2) )
               {
-                double vx = sensor_fusion[i][3];
-                double vy = sensor_fusion[i][4];
-                double check_speed = sqrt(vx*vx + vy*vy);
-                double check_car_s = sensor_fusion[i][5];
+                double vx = sensor_fusion[i][SF_IDX_VX];
+                double vy = sensor_fusion[i][SF_IDX_VY];
+                double other_car_speed = sqrt(vx*vx + vy*vy);
+                double other_car_s = sensor_fusion[i][SF_IDX_S];
+                double other_car_d = sensor_fusion[i][SF_IDX_D];
 
-                // other car's expected postion at horizon
-                check_car_s += ( (double)prev_size*0.02*check_speed );
-                double front_s_gap = check_car_s - car_s;
+                // other car's expected postion at behavior horizon
+                other_car_s += ( (double)prev_size*0.02*other_car_speed );
+                vec_front_car << -other_car_s, -other_car_d;
+
+                double front_s_gap = other_car_s - car_s;
 
                 //debug
                 cout << "front_s_gap = " << front_s_gap << endl;
                 //debug end
 
-                if( (front_s_gap > 0) && ( front_s_gap < 30) )
+                if( (front_s_gap > 0) && ( front_s_gap < SAFE_FRONT_GAP) )
                 {
                   // ref_vel = 29.5; // mph
                   too_close = true;
-                  if(lane > 0)
-                  {
-                    lane = 0;
-                  }
+                  // if(lane > 0)
+                  // {
+                  //   lane = 0;
+                  // }
                 }
 
               }
@@ -307,7 +326,8 @@ int main() {
 
             if(too_close)
             {
-              ref_vel -= 0.224; // decrease 1 [m/s]
+              // ref_vel -= 0.224; // decrease 1 [m/s]
+              ref_vel = abs(vec_goal + vec_front_car);
             }
             else if( ref_vel < 49.5)
             {
@@ -457,45 +477,6 @@ int main() {
             //debug
             cout << "next_x_vals.size = " << next_x_vals.size() << endl;
             //end debug
-
-            // // circular motion
-            // double pos_x;
-            // double pos_y;
-            // double angle;
-            // int path_size = previous_path_x.size();
-            //
-            // for(int i = 0; i < path_size; i++)
-            // {
-            //     next_x_vals.push_back(previous_path_x[i]);
-            //     next_y_vals.push_back(previous_path_y[i]);
-            // }
-            //
-            // if(path_size == 0)
-            // {
-            //     pos_x = car_x;
-            //     pos_y = car_y;
-            //     angle = deg2rad(car_yaw);
-            // }
-            // else
-            // {
-            //     pos_x = previous_path_x[path_size-1];
-            //     pos_y = previous_path_y[path_size-1];
-            //
-            //     double pos_x2 = previous_path_x[path_size-2];
-            //     double pos_y2 = previous_path_y[path_size-2];
-            //     angle = atan2(pos_y-pos_y2,pos_x-pos_x2);
-            // }
-            //
-            // double dist_inc = 0.5;
-            // for(int i = 0; i < 50-path_size; i++)
-            // {
-            //     next_x_vals.push_back(pos_x+(dist_inc)*cos(angle+(i+1)*(pi()/100)));
-            //     next_y_vals.push_back(pos_y+(dist_inc)*sin(angle+(i+1)*(pi()/100)));
-            //     pos_x += (dist_inc)*cos(angle+(i+1)*(pi()/100));
-            //     pos_y += (dist_inc)*sin(angle+(i+1)*(pi()/100));
-            // }
-
-            //end
 
             msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
