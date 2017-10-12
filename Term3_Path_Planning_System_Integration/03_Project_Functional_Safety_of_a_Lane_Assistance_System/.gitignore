@@ -1,0 +1,18 @@
+# simulator folder
+term3_sim_windows/
+
+#references
+references/
+
+02_Raw_Files/
+
+#build dir
+build/
+
+*.zip
+
+temp_path_result.txt
+
+
+
+
