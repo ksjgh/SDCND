@@ -1,0 +1,114 @@
+<html><head><meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+<link href="doxygen.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<h1>Project 2: Potential Field Planning for a Rigid Body Robot</h1>
+<center>
+</center>
+<div class="contents">
+<h1></h1>
+
+<h2><a class="anchor" name="impNotesRigidBody">
+Summary: </a></h2>
+
+
+<ul>
+<li>Implement potential field planners
+in the case of <b><em>rigid bodies (80pts) </em></b></li>
+<li>Your implementation should also contain strategies for escaping
+  local minima when the robot gets stuck <b>(20pts)</b>. One possibility is to
+  considerably increase the repulsive potential in order to push the robot away
+  from the obstacle. Another one is to move in a random direction
+  away from the obstacle. You could also try adding other artificial
+  goal/obstacle points to guide the robot away from the real
+  obstacles and toward the real goal.</li>
+
+<li>Project is graded out of 100 points</li>
+<li>You can work by yourself or with a partner of your own choice</li>
+<li>Implementation should be in C/C++ or Matlab on top of the provided support code</li>
+</ul>
+
+<p>
+Environment consists of a robot, a goal region represented as a
+circle, and several obstacles represented as circles as
+well. Graphical interface supports the dynamic addition and
+displacement of obstacles and goal. A new obstacle can be added at any
+time by pressing down the left-button of the mouse. Each obstacle and
+the goal can be moved around by clicking inside them and holding the
+left-button down while moving the mouse.  To run the planner, user
+needs to press the key 'p' on the keyboard. Pressing 'p' again toggles
+between running and stopping the planner. User can change the radius
+of each obstacle and the goal by first pressing the key 'r' and then
+clicking inside an obstacle/goal, holding the left-button down while
+moving the mouse.  Pressing 'r' again toggles between editing radius
+or moving the obstacles and the goal.
+
+<h2><a class="anchor" name="impNotesRigidBody">
+Implementation Notes: </a></h2>
+
+
+<p>
+Simulator provides access to goal center, goal radius, number of
+obstacles, current robot configuration (robot x, robot y, robot
+theta), and vertices of the polygon representing the robot.
+Simulator also computes the closest point on the i-th obstacle for any
+given point (x, y), see function <b>ClosestPointOnObstacle</b>
+</p>
+
+<p>
+When computing the potential, it is recommended that you use each
+vertex of the polygon robot as a control point. 
+<ul>
+<li>
+For each control
+point (xj, yj), you should then
+<ul>
+<li>compute its Jacobian matrix Jac<sub>j</sub></li>
+<li>compute the workspace gradient (wsg<sub>i</sub>) to each obstacle
+  [In my implementation, wsg<sub>i</sub> is zero if  the
+  distance from (xj, yj) to the closest point on the i-th obstacle is larger than a
+  small constant. I then scale the gradient in order to ensure that
+  the robot gets pushed away when coming 
+  close to the obstacles. You may need to play around in order to
+  figure out by how much to scale the gradient in order to get the
+  desired behavior.]</li>
+<li> use the Jacobian matrix to transform wsg<sub>i</sub> into a
+  configuration space gradient csg<sub>i</sub></li>
+<li>add the configuration space gradient csg<sub>i</sub> to the
+  overall configuration space gradient csg</li>
+</ul>
+</li>
+<li>Now that the overall configuration space gradient has been
+  computed, scale it so that you make a small move in x and y and a
+  small move in theta. Recall that the robot should always move in
+  direction opposite to the gradient. </li>
+</ul>
+</p>
+
+<p>
+If using <b>C++</b> support code, you should implement the
+function <b>ConfigurationMove</b> in the
+class <b>RigidBodyPlanner.</b> This function should
+return <b>RigidBodyMove</b>, which represents a small move (dx, dy,
+dtheta) by the robot.
+</p>
+
+</ul>
+
+<h2><a class="anchor" name="impNotesRigidBody">
+What and where to deliver: </a></h2>
+
+<ul>
+<li> Zip entire directory and name
+  CS485_PFP_FirstName_LastName.zip</li>
+<li> If you worked with someone else, pick one of you as representative for
+  naming of deliverable</li> 
+<li> Provide Readme file inside that tells me members of team </li>
+<li> Submit in blackoard under assignment 2 </li>
+
+</ul>
+
+
+</body>
+</html>
