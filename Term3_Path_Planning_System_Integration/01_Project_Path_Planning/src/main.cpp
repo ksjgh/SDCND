@@ -23,7 +23,8 @@
 #define N_PATH_POINTS 50
 #define DELTA_T 0.02
 
-#define MAX_SPEED 49.5 // mph
+#define MAX_SPEED_MPH 49.5 // mph
+#define MPH_TO_MPS 0.44704 // mile per hour to meter per secound
 #define MAX_ACCEL 10 // total acceleration(tangential , centrifugal) 10 m/s^2
 #define MAX_JERK 10 //  10 m/s^3
 
@@ -127,19 +128,23 @@ int main() {
             int lane = 1;
 
             // follow lane with smoothed line
-            int prev_size = previous_path_x.size();
+            int previous_path_size = previous_path_x.size();
+            vector<double> new_ptsx, new_ptsy;
 
-            vector<double> ptsx, ptsy;
+            VectorXd velocity(2);
+            velocity << MAX_SPEED_MPH * MPH_TO_MPS , 0;
 
-            double dist_inc = 0.3;
+            VectorXd next_pos(2);
+            VectorXd current_pos(2);
+            current_pos << car_s, car_d;
+
             for(int i = 0; i < 50; i++)
             {
-                  double next_s = car_s + dist_inc * i;
-                  double next_d = car_d;
+                  next_pos = current_pos +  velocity * DELTA_T;
 
                   vector<double> next_xy(2);
-                  next_xy = getXY(next_s,
-                                  next_d,
+                  next_xy = getXY(next_pos(0),
+                                  next_pos(1),
                                   map_waypoints_s,
                                   map_waypoints_x,
                                   map_waypoints_y);
@@ -149,6 +154,8 @@ int main() {
 
                   next_x_vals.push_back(next_x);
                   next_y_vals.push_back(next_y);
+
+                  current_pos = next_pos;
             }
 
             msgJson["next_x"] = next_x_vals;
