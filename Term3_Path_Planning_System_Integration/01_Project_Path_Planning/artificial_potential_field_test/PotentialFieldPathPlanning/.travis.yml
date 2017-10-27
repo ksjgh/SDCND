@@ -1,0 +1,43 @@
+sudo: required
+dist: trusty
+
+# Enable C++ support
+# Modern cpp settings from
+#  http://genbattle.bitbucket.org/blog/2016/01/17/c++-travis-ci/
+language: cpp
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - cmake
+            - cmake-data
+      env: COMPILER=g++-5
+
+before_install: 
+  - sudo apt-get install build-essential
+  - sudo apt-get install freeglut3-dev
+  - sudo apt-get install libxmu-dev libxi-dev  
+  - pip install --user cpp-coveralls
+  
+install:
+  - sudo apt-get install -y -qq lcov
+# Build steps
+script:
+  - export CXX=$COMPILER;
+  - mkdir build
+  - cd build
+  - cmake .. 
+  - make
+  - test/cpp-test
+
+after_success:
+  - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*"
+
+notifications:
+  email: false

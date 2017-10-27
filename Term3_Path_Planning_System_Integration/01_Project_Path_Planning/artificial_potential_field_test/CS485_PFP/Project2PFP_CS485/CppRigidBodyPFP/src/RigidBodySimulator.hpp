@@ -14,36 +14,36 @@ struct Point
     double m_y;
 };
 
-   
-    
+
+
 class RigidBodySimulator
 {
-public:    
+public:
     RigidBodySimulator(void);
-    
+
     ~RigidBodySimulator(void);
 
     double GetGoalCenterX(void) const
     {
-	return m_circles[0];	
+	return m_circles[0];
     }
 
     double GetGoalCenterY(void) const
     {
-	return m_circles[1];	
+	return m_circles[1];
     }
 
     double GetGoalRadius(void) const
     {
 	return m_circles[2];
     }
-    
+
 
     int GetNrObstacles(void) const
     {
 	return m_circles.size() / 3 - 1;
     }
-    
+
     //new method to return no. of robots for gradient calculations
     // +when robots.size = 0, goal reached
     int GetNrRobots(void) const
@@ -56,14 +56,14 @@ public:
      */
     Point ClosestPointOnObstacle(const int i, const double x, const double y);
     Point ClosestPointOnRobotRadius(const int i, const double x, const double y);
-    
+
     bool NotInCollision(int x1, int y1, int r1, int x2, int y2, int r2)
     {
     	double distance = sqrt(pow(x2 - x1,2) + pow(y2 - y1,2));
-    	
+
     	return distance >= (r2 + r1);
     }
-    
+
     Point GetCentroid(int i)
     {
     	double A = 0;
@@ -83,23 +83,24 @@ public:
     		sumX += (x1 + x2)*(x1*y2 - x2*y1);
     		sumY += (y1 + y2)*(x1*y2 - x2*y1);
     	}
-    	
+
     	return Point(sumX/(6.0*A),sumY/(6.0*A));
     }
-    
+
     double GetRadius(int i, Point C) //calculates smallest radius of a circle centered at centroid such that the sub-robot is bound by the circle
     {
     	double radius;
-    	
-    	for(int j=0;j<m_robot.currVertices[i].size();j++)
+
+    	for(int j=0;j<m_robot.m_currVertices[i].size();j++)
     	{
-    		double new_distance = sqrt(pow(C.x - m.robot.currVertices[i][j],2) + pow(C.y - m.robot.currVertices[i][j+1],2));
+    		// double new_distance = sqrt(pow(C.x - m.robot.currVertices[i][j],2) + pow(C.y - m.robot.currVertices[i][j+1],2));
+        double new_distance = sqrt(pow(C.m_x - m_robot.m_currVertices[i][j],2) + pow(C.m_y - m_robot.m_currVertices[i][j+1],2));
     		if(new_distance < radius)
     		{
     			radius = new_distance;
     		}
     	}
-    	
+
     	return radius;
     }
 
@@ -107,12 +108,12 @@ public:
     {
 	return m_robot.m_x[i];
     }
-    
+
     double GetRobotY(int i) const
     {
 	return m_robot.m_y[i];
     }
-    
+
     double GetRobotTheta(int i) const
     {
 	return m_robot.m_theta[i];
@@ -122,7 +123,7 @@ public:
     {
 	return m_robot.m_currVertices[i].size() / 2;
     }
-    
+
     /*
      * Vertices are stored consecutively in the vector
      * So the x-coord of the i-th vertex is at index 2 * i
@@ -142,12 +143,12 @@ public:
 	const double gy = GetGoalCenterY();
 	const double rx = GetRobotX(i);
 	const double ry = GetRobotY(i);
-	
-	return 
+
+	return
 	    sqrt((gx - rx) * (gx - rx) + (gy - ry) * (gy - ry)) <= GetGoalRadius();
     }
-    
-    
+
+
 protected:
     void AddToRobotConfiguration(int r, const double dx, const double dy, const double dtheta);
 
@@ -165,7 +166,7 @@ protected:
 	std::vector<double> m_theta;
 	std::vector<double> m_totalSolveTime;
     };
-	
+
     Robot m_robot;
 
     friend class Graphics;
