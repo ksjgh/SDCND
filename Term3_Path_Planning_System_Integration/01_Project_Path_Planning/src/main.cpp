@@ -131,11 +131,24 @@ int main() {
 
             vector<double> ptsx, ptsy;
 
-            double dist_inc = 0.5;
+            double dist_inc = 0.3;
             for(int i = 0; i < 50; i++)
             {
-                  next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
-                  next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+                  double next_s = car_s + dist_inc * i;
+                  double next_d = car_d;
+
+                  vector<double> next_xy(2);
+                  next_xy = getXY(next_s,
+                                  next_d,
+                                  map_waypoints_s,
+                                  map_waypoints_x,
+                                  map_waypoints_y);
+
+                  double next_x = next_xy[0] ;
+                  double next_y = next_xy[1];
+
+                  next_x_vals.push_back(next_x);
+                  next_y_vals.push_back(next_y);
             }
 
             msgJson["next_x"] = next_x_vals;
