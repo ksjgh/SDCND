@@ -111,8 +111,8 @@ int main() {
           	auto previous_path_y = j[1]["previous_path_y"];
 
           	// Previous path's end s and d values
-          	double end_path_s = j[1]["end_path_s"];
-          	double end_path_d = j[1]["end_path_d"];
+          	double previous_path_end_s = j[1]["end_path_s"];
+          	double previous_path_end_d = j[1]["end_path_d"];
 
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
           	auto sensor_fusion = j[1]["sensor_fusion"];
@@ -124,38 +124,103 @@ int main() {
 
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-            // start in lane 1
-            int lane = 1;
 
-            // follow lane with smoothed line
             int previous_path_size = previous_path_x.size();
-            vector<double> new_ptsx, new_ptsy;
+            vector<double> new_pts_x, new_pts_y;
+            vector<double> new_pts_s, new_pts_d;
+
+            // /* if previous size is almost empty, use current position
+            //    as starting reference */
+            if(previous_path_size < 2)
+            {
+              previous_path_end_s = car_s;
+              previous_path_end_d = car_d;
+
+              // // Use two points that make the path tangent to the car
+              // double prev_car_s = car_s - 1.0;
+              // double prev_car_d = car_d
+              //
+              // new_pts_s.push_back(prev_car_s);
+              // new_pts_s.push_back(car_s);
+              //
+              // new_pts_d.push_back(prev_car_d);
+              // new_pts_d.push_back(car_d);
+            }
+            // // use the previous path's end point as starting reference
+            // // to get smooth trasition
+            // else
+            // {
+            //   // redefine reference state as previous path end point
+            //   ref_x = previous_path_x[previous_path_size-1];
+            //   ref_y = previous_path_y[previous_path_size-1];
+            //
+            //   double ref_x_prev = previous_path_x[previous_path_size-2];
+            //   double ref_y_prev = previous_path_y[previous_path_size-2];
+            //   ref_yaw = atan2( ref_y - ref_y_prev, ref_x - ref_x_prev);
+            //
+            //   // Use tow points that make the path tangent to the previous path's end points
+            //   ptsx.push_back(ref_x_prev);
+            //   ptsx.push_back(ref_x);
+            //
+            //   ptsy.push_back(ref_y_prev);
+            //   ptsy.push_back(ref_y);
+            // }
+
+
+            //debug
+            cout << "--------------- New loop ------------------------"<<endl;
+            cout << "previous_path_size = " << previous_path_size <<endl;
+            // cout << "previous_path_x.begin() , previous_path_y.begin() = "
+            //     //  << previous_path_x.begin() << ","<< previous_path_y.begin() <<endl;
+            //      << previous_path_x[0] << ","<< previous_path_y[0] <<endl;
+            // cout << "previous_path_x.end() , previous_path_y.end() = "
+            //      << previous_path_x[previous_path_size-1] << ","<< previous_path_y[previous_path_size-1] <<endl;
+            cout << "car_x , car_y = " << car_x << ","<< car_y <<endl;
+            cout << "car_s , car_d = " << car_s << ","<< car_d <<endl;
+            //end debug
 
             VectorXd velocity(2);
             velocity << MAX_SPEED_MPH * MPH_TO_MPS , 0;
 
             VectorXd next_pos(2);
             VectorXd current_pos(2);
-            current_pos << car_s, car_d;
+            current_pos << previous_path_end_s,
+                           previous_path_end_d;
 
-            for(int i = 0; i < 50; i++)
+            double n_rest_points = N_PATH_POINTS - previous_path_size;
+            for(int i = 0; i < n_rest_points; i++)
             {
                   next_pos = current_pos +  velocity * DELTA_T;
 
+                  new_pts_s.push_back(next_pos(0));
+                  new_pts_d.push_back(next_pos(1));
+
+                  current_pos = next_pos;
+            }
+
+            for(int i = 0; i < n_rest_points; i++)
+            {
                   vector<double> next_xy(2);
-                  next_xy = getXY(next_pos(0),
-                                  next_pos(1),
+                  next_xy = getXY(new_pts_s[i],
+                                  new_pts_d[i],
                                   map_waypoints_s,
                                   map_waypoints_x,
                                   map_waypoints_y);
 
-                  double next_x = next_xy[0] ;
-                  double next_y = next_xy[1];
+                  new_pts_x.push_back(next_xy[0]);
+                  new_pts_y.push_back(next_xy[1]);
+            }
 
-                  next_x_vals.push_back(next_x);
-                  next_y_vals.push_back(next_y);
+            for(int i=0; i<previous_path_size; i++)
+            {
+              next_x_vals.push_back(previous_path_x[i]);
+              next_y_vals.push_back(previous_path_y[i]);
+            }
 
-                  current_pos = next_pos;
+            for(int i=0; i<new_pts_x.size(); i++)
+            {
+              next_x_vals.push_back(new_pts_x[i]);
+              next_y_vals.push_back(new_pts_y[i]);
             }
 
             msgJson["next_x"] = next_x_vals;
