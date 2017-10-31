@@ -5,30 +5,15 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
-#include "Eigen-3.3/Eigen/Dense"
+
+// #include "Eigen-3.3/Eigen/Core"
+// #include "Eigen-3.3/Eigen/QR"
+// #include "Eigen-3.3/Eigen/Dense"
+
 #include "json.hpp"
-#include "spline.h"
-#include "helper.h"
-
-// define sensor fusion data access index
-#define SF_IDX_VX  3 // cf.) float vx = sensor_fusion[i][SF_IDX_D]
-#define SF_IDX_VY  4 // cf.) float vy = sensor_fusion[i][SF_IDX_D]
-#define SF_IDX_S   5 // cf.) float s = sensor_fusion[i][SF_IDX_D]
-#define SF_IDX_D   6 // cf.) float d = sensor_fusion[i][SF_IDX_D]
-
-// total number of points in the path planner, 20ms between points
-// N_PATH_POINTS * 20ms = behavior horizon , ex) 50 * 20ms = 1.0[s]
-#define N_PATH_POINTS 50
-#define DELTA_T 0.02
-
-#define MAX_SPEED_MPH 49.5 // mph
-#define MPH_TO_MPS 0.44704 // mile per hour to meter per secound
-#define MAX_ACCEL 10 // total acceleration(tangential , centrifugal) 10 m/s^2
-#define MAX_JERK 10 //  10 m/s^3
-
-// Weight definition
+// #include "spline.h"
+// #include "helper.h"
+#include "path_planner.h"
 
 using namespace std;
 
@@ -72,13 +57,6 @@ int main() {
   	map_waypoints_dy.push_back(d_y);
   }
 
-  // // start in lane 1
-  // int lane = 1;
-  //
-  // // reference velocity to target
-  // double ref_vel = 49.5; // mph
-
-
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -106,6 +84,23 @@ int main() {
           	double car_yaw = j[1]["yaw"];
           	double car_speed = j[1]["speed"];
 
+            // ego car state
+            vector<double> car_state;
+            car_state.push_back(car_x);
+            car_state.push_back(car_y);
+            car_state.push_back(car_s);
+            car_state.push_back(car_d);
+            car_state.push_back(car_yaw);
+            car_state.push_back(car_speed);
+
+            // map waypoints
+            // vector<vector<double>> map_waypoints;
+            // map_waypoints.push_back(map_waypoints_x);
+            // map_waypoints.push_back(map_waypoints_y);
+            // map_waypoints.push_back(map_waypoints_s);
+            // map_waypoints.push_back(map_waypoints_dx);
+            // map_waypoints.push_back(map_waypoints_dy);
+
           	// Previous path data given to the Planner
           	auto previous_path_x = j[1]["previous_path_x"];
           	auto previous_path_y = j[1]["previous_path_y"];
@@ -126,101 +121,64 @@ int main() {
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
 
             int previous_path_size = previous_path_x.size();
-            vector<double> new_pts_x, new_pts_y;
-            vector<double> new_pts_s, new_pts_d;
 
-            // /* if previous size is almost empty, use current position
-            //    as starting reference */
-            if(previous_path_size < 2)
-            {
-              previous_path_end_s = car_s;
-              previous_path_end_d = car_d;
-
-              // // Use two points that make the path tangent to the car
-              // double prev_car_s = car_s - 1.0;
-              // double prev_car_d = car_d
-              //
-              // new_pts_s.push_back(prev_car_s);
-              // new_pts_s.push_back(car_s);
-              //
-              // new_pts_d.push_back(prev_car_d);
-              // new_pts_d.push_back(car_d);
-            }
-            // // use the previous path's end point as starting reference
-            // // to get smooth trasition
-            // else
-            // {
-            //   // redefine reference state as previous path end point
-            //   ref_x = previous_path_x[previous_path_size-1];
-            //   ref_y = previous_path_y[previous_path_size-1];
-            //
-            //   double ref_x_prev = previous_path_x[previous_path_size-2];
-            //   double ref_y_prev = previous_path_y[previous_path_size-2];
-            //   ref_yaw = atan2( ref_y - ref_y_prev, ref_x - ref_x_prev);
-            //
-            //   // Use tow points that make the path tangent to the previous path's end points
-            //   ptsx.push_back(ref_x_prev);
-            //   ptsx.push_back(ref_x);
-            //
-            //   ptsy.push_back(ref_y_prev);
-            //   ptsy.push_back(ref_y);
-            // }
-
+            vector<vector<double>> previous_path_xy;
+            previous_path_xy.push_back(previous_path_x);
+            previous_path_xy.push_back(previous_path_y);
 
             //debug
-            cout << "--------------- New loop ------------------------"<<endl;
-            cout << "previous_path_size = " << previous_path_size <<endl;
-            // cout << "previous_path_x.begin() , previous_path_y.begin() = "
-            //     //  << previous_path_x.begin() << ","<< previous_path_y.begin() <<endl;
-            //      << previous_path_x[0] << ","<< previous_path_y[0] <<endl;
-            // cout << "previous_path_x.end() , previous_path_y.end() = "
-            //      << previous_path_x[previous_path_size-1] << ","<< previous_path_y[previous_path_size-1] <<endl;
-            cout << "car_x , car_y = " << car_x << ","<< car_y <<endl;
-            cout << "car_s , car_d = " << car_s << ","<< car_d <<endl;
-            //end debug
+            cout << "--------------- in main ------------------------"<<"\n";
+            cout << "previous_path_xy[0].size() = " << previous_path_xy[0].size() <<"\n";
+            cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
+            //debug
 
-            VectorXd velocity(2);
-            velocity << MAX_SPEED_MPH * MPH_TO_MPS , 0;
+            vector<vector <double>> new_pts_xy(2);
+            vector<vector <double>> new_pts_sd(2);
 
-            VectorXd next_pos(2);
-            VectorXd current_pos(2);
-            current_pos << previous_path_end_s,
-                           previous_path_end_d;
+            // call path planner
+            new_pts_sd = get_new_path(car_state,
+                                      sensor_fusion,
+                                      previous_path_xy,
+                                      map_waypoints_x,
+                                      map_waypoints_y);
 
-            double n_rest_points = N_PATH_POINTS - previous_path_size;
-            for(int i = 0; i < n_rest_points; i++)
-            {
-                  next_pos = current_pos +  velocity * DELTA_T;
-
-                  new_pts_s.push_back(next_pos(0));
-                  new_pts_d.push_back(next_pos(1));
-
-                  current_pos = next_pos;
-            }
-
-            for(int i = 0; i < n_rest_points; i++)
+            // convert coordinate and save new waypoints
+            int new_pts_size = new_pts_sd[0].size();
+            for(int i = 0; i < new_pts_size; i++)
             {
                   vector<double> next_xy(2);
-                  next_xy = getXY(new_pts_s[i],
-                                  new_pts_d[i],
+                  next_xy = getXY(new_pts_sd[0][i], // frenet s
+                                  new_pts_sd[1][i], // frenet d
                                   map_waypoints_s,
                                   map_waypoints_x,
                                   map_waypoints_y);
 
-                  new_pts_x.push_back(next_xy[0]);
-                  new_pts_y.push_back(next_xy[1]);
+                  new_pts_xy[0].push_back(next_xy[0]);
+                  new_pts_xy[1].push_back(next_xy[1]);
             }
 
             for(int i=0; i<previous_path_size; i++)
             {
               next_x_vals.push_back(previous_path_x[i]);
               next_y_vals.push_back(previous_path_y[i]);
+
+              // //debug
+              // cout << "\n";
+              // cout << "previous_path_x,y = " << previous_path_x[i]<< previous_path_y[i] <<"\n";
+              // cout << "\n";
+              // //end debug
             }
 
-            for(int i=0; i<new_pts_x.size(); i++)
+            for(int i=0; i<new_pts_size; i++)
             {
-              next_x_vals.push_back(new_pts_x[i]);
-              next_y_vals.push_back(new_pts_y[i]);
+              next_x_vals.push_back(new_pts_xy[0][i]);
+              next_y_vals.push_back(new_pts_xy[1][i]);
+
+              // //debug
+              // cout << "\n";
+              // cout << "new_pts_xy = " << new_pts_xy[0][i]<<new_pts_xy[1][i] <<"\n";
+              // cout << "\n";
+              // //end debug
             }
 
             msgJson["next_x"] = next_x_vals;
