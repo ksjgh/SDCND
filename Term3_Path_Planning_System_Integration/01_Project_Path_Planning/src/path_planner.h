@@ -2,6 +2,7 @@
 #define PATH_PLANNER_H
 
 #include <math.h>
+#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -30,6 +31,7 @@
 
 #define MAX_SPEED_MPH 49.5 // mph
 #define MPH_TO_MPS 0.44704 // mile per hour to meter per secound
+#define MAX_SPEED ((MAX_SPEED_MPH)*(MPH_TO_MPS))
 #define MAX_ACCEL 10 // total acceleration(tangential , centrifugal) 10 m/s^2
 #define MAX_JERK 10 //  10 m/s^3
 
@@ -44,6 +46,59 @@ using namespace std;
 #define CAR_STATE_IDX_YAW   4
 #define CAR_STATE_IDX_SPEED 5
 
+#define EPSILON_S (1.0e-2)  // for gradient calculation
+#define EPSILON_D (1.0e-2)  // for gradient calculation
+#define W_P_GOAL_ZERO 0.0
+
+double get_potential(VectorXd p,
+                     vector<double> car_state,
+                     vector<vector<double>> sensor_fusion)
+{
+  double potential;
+  double s = p(0);
+  double car_s = car_state[CAR_STATE_IDX_S];
+  // double car_s = 0.0;
+  // double Sg = 100.0;
+  potential = -MAX_SPEED*(s-car_s) - W_P_GOAL_ZERO;
+
+  return potential;
+}
+
+VectorXd get_gradient(VectorXd p,
+                      vector<double> car_state,
+                      vector<vector<double>> sensor_fusion)
+{
+  VectorXd grad(2);
+  VectorXd ps(2);
+  VectorXd pd(2);
+
+  ps << p(0)+EPSILON_S, p(1);
+  pd << p(0)          , p(1)+EPSILON_D;
+
+  double p_p  = get_potential(p  ,car_state,sensor_fusion);
+  double p_ps = get_potential(ps ,car_state,sensor_fusion);
+  double p_pd = get_potential(pd ,car_state,sensor_fusion);
+
+  // // debug
+  // double p_p0  = 0.0;
+  // double p_ps  = -MAX_SPEED*EPSILON_S;
+  // double p_pd = 0.0;
+  // // debug
+
+  double grad_s, grad_d;
+  grad_s = (p_ps - p_p)/(double)EPSILON_S;
+  grad_d = (p_pd - p_p)/(double)EPSILON_D;
+
+  grad << grad_s, grad_d;
+
+  // //debug
+  // cout << "\n";
+  // cout << "--------------- get_gradient"<<"\n";
+  // cout << "grad_s , grad_d = " << grad_s << " , "<< grad_d <<"\n";
+  // //end debug
+
+  return grad;
+}
 
 vector<vector<double>> get_new_path(vector<double> car_state,
                                     vector<vector<double>> sensor_fusion,
@@ -64,9 +119,10 @@ vector<vector<double>> get_new_path(vector<double> car_state,
   int previous_path_size = previous_path_xy[0].size();
 
   //debug
+  cout << "\n";
   cout << "--------------- Func called ------------------------"<<"\n";
   cout << "previous_path_xy[0].size() = " << previous_path_xy[0].size() <<"\n";
-  cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
+  // cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
 
   // cout << "car_x , car_y = " << car_x << ","<< car_y <<"\n";
   // cout << "car_s , car_d = " << car_s << ","<< car_d <<"\n";
@@ -108,9 +164,6 @@ vector<vector<double>> get_new_path(vector<double> car_state,
     previous_path_end_d = previous_path_end_sd[1];
   }
 
-  VectorXd velocity(2);
-  velocity << MAX_SPEED_MPH * MPH_TO_MPS , 0;
-
   VectorXd p1(2);
   VectorXd p2(2);
   p1 << previous_path_end_s,
@@ -120,21 +173,20 @@ vector<vector<double>> get_new_path(vector<double> car_state,
   for(int i = 0; i < n_rest_points; i++)
   {
 
-        // get velocity
-            // potential_field = get_potential(double target_speed, sensor_fusion)
-            // velocity = -get_gradient(p,potential_field)
-            // check speed limit , update velocity
+        VectorXd velocity(2);
+        velocity = -get_gradient(p1, car_state, sensor_fusion);
 
-        // velocity = get_velocity();
+        // // debug
+        // velocity << MAX_SPEED_MPH * MPH_TO_MPS , 0;
+        // // debug
 
         p2 = p1 +  velocity * DELTA_T;
-
-        // p2 = get_next_point
 
         new_pts_sd[0].push_back(p2(0));
         new_pts_sd[1].push_back(p2(1));
 
         // //debug
+        // // if this code on, car will go and stop due to delay
         // cout << endl;
         // cout << "new_pts_sd push p2" <<endl;
         // cout << "new_pts_sd[0].back() = " << new_pts_sd[0].back() << endl;

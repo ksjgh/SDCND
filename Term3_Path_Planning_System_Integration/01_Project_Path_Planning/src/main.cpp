@@ -126,11 +126,11 @@ int main() {
             previous_path_xy.push_back(previous_path_x);
             previous_path_xy.push_back(previous_path_y);
 
-            //debug
-            cout << "--------------- in main ------------------------"<<"\n";
-            cout << "previous_path_xy[0].size() = " << previous_path_xy[0].size() <<"\n";
-            cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
-            //debug
+            // //debug
+            // cout << "--------------- in main ------------------------"<<"\n";
+            // cout << "previous_path_xy[0].size() = " << previous_path_xy[0].size() <<"\n";
+            // // cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
+            // //debug
 
             vector<vector <double>> new_pts_xy(2);
             vector<vector <double>> new_pts_sd(2);
@@ -161,7 +161,7 @@ int main() {
             {
               next_x_vals.push_back(previous_path_x[i]);
               next_y_vals.push_back(previous_path_y[i]);
-
+              //
               // //debug
               // cout << "\n";
               // cout << "previous_path_x,y = " << previous_path_x[i]<< previous_path_y[i] <<"\n";
