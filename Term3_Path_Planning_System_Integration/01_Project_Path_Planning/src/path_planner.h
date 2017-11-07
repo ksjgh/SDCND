@@ -24,21 +24,6 @@
 #define SF_IDX_S   5 // cf.) float s = sensor_fusion[i][SF_IDX_S]
 #define SF_IDX_D   6 // cf.) float d = sensor_fusion[i][SF_IDX_D]
 
-// total number of points in the path planner, 20ms between points
-// N_PATH_POINTS * 20ms = behavior horizon , ex) 50 * 20ms = 1.0[s]
-#define N_PATH_POINTS 50
-#define DELTA_T 0.02
-
-#define MAX_SPEED_MPH 49.5 // mph
-#define MPH_TO_MPS 0.44704 // mile per hour to meter per secound
-#define MAX_SPEED ((MAX_SPEED_MPH)*(MPH_TO_MPS))
-#define MAX_ACCEL 10 // total acceleration(tangential , centrifugal) 10 m/s^2
-#define MAX_JERK 10 //  10 m/s^3
-
-// Weight definition
-
-using namespace std;
-
 #define CAR_STATE_IDX_X     0
 #define CAR_STATE_IDX_Y     1
 #define CAR_STATE_IDX_S     2
@@ -48,20 +33,105 @@ using namespace std;
 
 #define EPSILON_S (1.0e-2)  // for gradient calculation
 #define EPSILON_D (1.0e-2)  // for gradient calculation
-#define W_P_GOAL_ZERO 0.0
+
+// total number of points in the path planner, 20ms between points
+// N_PATH_POINTS * 20ms = behavior horizon , ex) 50 * 20ms = 1.0[s]
+#define N_PATH_POINTS 30
+#define DELTA_T 0.02
+
+#define MAX_SPEED_MPH 49.5 // mph
+#define MPH_TO_MPS 0.44704 // mile per hour to meter per secound
+#define MAX_SPEED ((MAX_SPEED_MPH)*(MPH_TO_MPS))
+#define MAX_ACCEL 10 // total acceleration(tangential , centrifugal) 10 m/s^2
+#define MAX_JERK 10 //  10 m/s^3
+
+#define LANE_WIDTH 4.0
+#define LANE0_CENTER 2.0
+#define LANE0_END 4.0
+#define LANE1_CENTER 6.0
+#define LANE1_END 8.0
+#define LANE2_CENTER 10.0
+#define LANE2_END 12.0
+#define RIGHTMOST 12.0
+#define FRONT_SAFE_DIST 30.0
+
+#define W_P_GOAL_BIAS 0.0
+#define W_P_CENTER_LANE 5.0
+#define W_P_RIGHTMOST_LANE 5.0
+
+#define W_P_OTHER_CAR 10.0
+#define W_P_SIGMA_S (FRONT_SAFE_DIST/2.0)
+#define W_P_SIGMA_D (LANE_WIDTH/1.0)
+
+using namespace std;
 
 double get_potential(VectorXd p,
                      vector<double> car_state,
                      vector<vector<double>> sensor_fusion)
 {
-  double potential;
-  double s = p(0);
-  double car_s = car_state[CAR_STATE_IDX_S];
-  // double car_s = 0.0;
-  // double Sg = 100.0;
-  potential = -MAX_SPEED*(s-car_s) - W_P_GOAL_ZERO;
+  double p_total = 0.0; // total potential
 
-  return potential;
+  double s = p(0);
+  double d = p(1);
+
+  double car_s = car_state[CAR_STATE_IDX_S];
+  double car_d = car_state[CAR_STATE_IDX_D];
+
+  // free state(no object) potential
+  // car runs with maximum speed
+  double p_free = -MAX_SPEED*(s-car_s) - W_P_GOAL_BIAS;
+  p_total += p_free;
+
+  // center line potential
+  double p_center_lane;
+  if( d < 0 || d > LANE0_CENTER)
+  {
+    p_center_lane = 0.0;
+  }
+  else
+  {
+      p_center_lane = W_P_CENTER_LANE*(1/d - 1/(LANE_WIDTH/2.0));
+  }
+  p_total += p_center_lane;
+
+  // rightmost line potential
+  double p_rightmost_line;
+  if( d < LANE2_CENTER)
+  {
+    p_rightmost_line = 0.0;
+  }
+  else
+  {
+    p_rightmost_line = W_P_RIGHTMOST_LANE*(1/(-(d-RIGHTMOST)) - 1/(LANE_WIDTH/2.0));
+  }
+  p_total += p_rightmost_line;
+
+  // other car's potential
+  for(int i=0; i < sensor_fusion.size(); i++)
+  {
+    // get other car's data
+    // double o_vx = sensor_fusion[i][SF_IDX_VX];
+    // double o_vy = sensor_fusion[i][SF_IDX_VY];
+    // double o_speed = sqrt(vx*vx + vy*vy);
+    double oc_s = sensor_fusion[i][SF_IDX_S];
+    double oc_d = sensor_fusion[i][SF_IDX_D];
+
+    double p_oc;
+    if( ((oc_s - s) > FRONT_SAFE_DIST) || (oc_s < s) )
+    {
+      p_oc = 0.0;
+    }
+    else
+    {
+      p_oc = W_P_OTHER_CAR * exp(-pow(s-oc_s,2)/pow(W_P_SIGMA_S,2))
+                           * exp(-pow(d-oc_d,2)/pow(W_P_SIGMA_D,2));
+    }
+    p_total += p_oc;
+  }
+
+  // lane line potential
+
+  return p_total;
 }
 
 VectorXd get_gradient(VectorXd p,
@@ -117,12 +187,12 @@ vector<vector<double>> get_new_path(vector<double> car_state,
   // vector<double> maps_y = map_waypoints[1];
 
   int previous_path_size = previous_path_xy[0].size();
-
-  //debug
-  cout << "\n";
-  cout << "--------------- Func called ------------------------"<<"\n";
-  cout << "previous_path_xy[0].size() = " << previous_path_xy[0].size() <<"\n";
-  // cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
+  //
+  // //debug
+  // cout << "\n";
+  // cout << "--------------- Func called ------------------------"<<"\n";
+  // cout << "previous_path_xy[0].size() = " << previous_path_xy[0].size() <<"\n";
+  // // cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
 
   // cout << "car_x , car_y = " << car_x << ","<< car_y <<"\n";
   // cout << "car_s , car_d = " << car_s << ","<< car_d <<"\n";
