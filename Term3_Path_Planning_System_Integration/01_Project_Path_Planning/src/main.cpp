@@ -106,11 +106,12 @@ int main() {
           	auto previous_path_y = j[1]["previous_path_y"];
 
           	// Previous path's end s and d values
-          	double previous_path_end_s = j[1]["end_path_s"];
-          	double previous_path_end_d = j[1]["end_path_d"];
+          	const double previous_path_end_s = j[1]["end_path_s"];
+          	const double previous_path_end_d = j[1]["end_path_d"];
 
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
-          	auto sensor_fusion = j[1]["sensor_fusion"];
+          	// auto sensor_fusion = j[1]["sensor_fusion"];
+            const vector<vector<double>> sensor_fusion = j[1]["sensor_fusion"];
 
           	json msgJson;
 
@@ -120,11 +121,7 @@ int main() {
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
 
-            int previous_path_size = previous_path_x.size();
-
-            vector<vector<double>> previous_path_xy;
-            previous_path_xy.push_back(previous_path_x);
-            previous_path_xy.push_back(previous_path_y);
+            const int previous_path_size = previous_path_x.size();
 
             // //debug
             // cout << "--------------- in main ------------------------"<<"\n";
@@ -132,15 +129,33 @@ int main() {
             // // cout << "previous_path_xy.size() = " << previous_path_xy.size() <<"\n";
             // //debug
 
-            vector<vector <double>> new_pts_xy(2);
-            vector<vector <double>> new_pts_sd(2);
+            vector<vector<double>> new_pts_xy(2);
+            vector<vector<double>> new_pts_sd(2);
 
             // call path planner
             new_pts_sd = get_new_path(car_state,
                                       sensor_fusion,
-                                      previous_path_xy,
+                                      previous_path_size,
+                                      previous_path_end_s,
+                                      previous_path_end_d,
                                       map_waypoints_x,
                                       map_waypoints_y);
+
+
+            // //debug
+            // // test go straint in frenet coord
+            // if(previous_path_size < 1)
+            // {
+            //   previous_path_end_s = car_s;
+            //   previous_path_end_d = 6;
+            // }
+            //
+            // for(int i=0; i<50-previous_path_size; i++)
+            // {
+            //   new_pts_sd[0].push_back(previous_path_end_s + 0.3*(i+1));
+            //   new_pts_sd[1].push_back(6);
+            // }
+            // //debug end
 
             // convert coordinate and save new waypoints
             int new_pts_size = new_pts_sd[0].size();
@@ -155,13 +170,21 @@ int main() {
 
                   new_pts_xy[0].push_back(next_xy[0]);
                   new_pts_xy[1].push_back(next_xy[1]);
+
+                  // //debug
+                  // cout << "\n";
+                  // cout << "new_pts_s,d = " << new_pts_sd[0][i] <<" , "<<new_pts_sd[1][i] <<"\n";
+                  // cout << "\n";
+                  // // //end debug
             }
 
+            // add previous path
+            // next_x,y_vals = previous_path_x,y + new_pts_x,y
             for(int i=0; i<previous_path_size; i++)
             {
               next_x_vals.push_back(previous_path_x[i]);
               next_y_vals.push_back(previous_path_y[i]);
-              //
+
               // //debug
               // cout << "\n";
               // cout << "previous_path_x,y = " << previous_path_x[i]<< previous_path_y[i] <<"\n";
@@ -169,6 +192,8 @@ int main() {
               // //end debug
             }
 
+            // add new path
+            // next_x,y_vals = previous_path_x,y + new_pts_x,y
             for(int i=0; i<new_pts_size; i++)
             {
               next_x_vals.push_back(new_pts_xy[0][i]);
