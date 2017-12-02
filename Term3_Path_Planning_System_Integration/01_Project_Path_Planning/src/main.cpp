@@ -93,7 +93,7 @@ int main() {
             car_state.push_back(car_yaw);
             car_state.push_back(car_speed);
 
-            // map waypoints
+            // map waypoints, data pack of waypoints
             // vector<vector<double>> map_waypoints;
             // map_waypoints.push_back(map_waypoints_x);
             // map_waypoints.push_back(map_waypoints_y);
@@ -132,6 +132,46 @@ int main() {
             vector<vector<double>> new_pts_xy(2);
             vector<vector<double>> new_pts_sd(2);
 
+            /* if previous size is almost empty, use current position
+               as starting reference */
+            // this is required for calulating smoothing path
+            double ref_x, ref_y, ref_yaw;
+            if(previous_path_size < 2)
+            {
+              // Use two points that make the path tangent to the car
+              double prev_car_x = car_x - cos(car_yaw);
+              double prev_car_y = car_y - sin(car_yaw);
+
+              ref_x = car_x;
+              ref_y = car_y;
+              ref_yaw = car_yaw;
+
+              new_pts_xy[0].push_back(prev_car_x);
+              new_pts_xy[0].push_back(car_x);
+
+              new_pts_xy[1].push_back(prev_car_y);
+              new_pts_xy[1].push_back(car_y);
+            }
+            // use the previous path's end point as starting reference
+            // to get smooth trasition
+            else
+            {
+              // redefine reference state as previous path end point
+              ref_x = previous_path_x[previous_path_size-1];
+              ref_y = previous_path_y[previous_path_size-1];
+
+              double ref_x_prev = previous_path_x[previous_path_size-2];
+              double ref_y_prev = previous_path_y[previous_path_size-2];
+              ref_yaw = atan2( ref_y - ref_y_prev, ref_x - ref_x_prev);
+
+              // Use tow points that make the path tangent to the previous path's end points
+              new_pts_xy[0].push_back(ref_x_prev);
+              new_pts_xy[0].push_back(ref_x);
+
+              new_pts_xy[1].push_back(ref_y_prev);
+              new_pts_xy[1].push_back(ref_y);
+            }
+
             // call path planner
             new_pts_sd = get_new_path(car_state,
                                       sensor_fusion,
@@ -141,41 +181,184 @@ int main() {
                                       map_waypoints_x,
                                       map_waypoints_y);
 
-
-            // //debug
-            // // test go straint in frenet coord
-            // if(previous_path_size < 1)
-            // {
-            //   previous_path_end_s = car_s;
-            //   previous_path_end_d = 6;
-            // }
-            //
-            // for(int i=0; i<50-previous_path_size; i++)
-            // {
-            //   new_pts_sd[0].push_back(previous_path_end_s + 0.3*(i+1));
-            //   new_pts_sd[1].push_back(6);
-            // }
-            // //debug end
-
             // convert coordinate and save new waypoints
             int new_pts_size = new_pts_sd[0].size();
             for(int i = 0; i < new_pts_size; i++)
             {
-                  vector<double> next_xy(2);
-                  next_xy = getXY(new_pts_sd[0][i], // frenet s
-                                  new_pts_sd[1][i], // frenet d
-                                  map_waypoints_s,
-                                  map_waypoints_x,
-                                  map_waypoints_y);
+                vector<double> next_xy(2);
+                next_xy = getXY(new_pts_sd[0][i], // frenet s
+                                new_pts_sd[1][i], // frenet d
+                                map_waypoints_s,
+                                map_waypoints_x,
+                                map_waypoints_y);
 
-                  new_pts_xy[0].push_back(next_xy[0]);
-                  new_pts_xy[1].push_back(next_xy[1]);
+                new_pts_xy[0].push_back(next_xy[0]);
+                new_pts_xy[1].push_back(next_xy[1]);
 
-                  // //debug
-                  // cout << "\n";
-                  // cout << "new_pts_s,d = " << new_pts_sd[0][i] <<" , "<<new_pts_sd[1][i] <<"\n";
-                  // cout << "\n";
-                  // // //end debug
+                // //debug
+                // cout <<endl;
+                // cout << "new_pts_s,d = " << new_pts_sd[0][i] <<" , "<<new_pts_sd[1][i] <<endl;
+                // cout << endl;
+                // // //end debug
+
+                // //debug
+                // if(i>0)
+                // {
+                //   if(new_pts_sd[0][i] < new_pts_sd[0][i-1])
+                //   {
+                //     cout << endl;
+                //     cout << "s_prev = " << new_pts_sd[0][i-1] << endl;
+                //     cout << "s_now  = " << new_pts_sd[0][i]   << endl;
+                //     cout << endl;
+                //   }
+                // }
+                // //debug end
+            }
+
+            // convert global coordinates into car's local coordinates for easy math
+            // //debug
+            // vector<vector<double>> copy_new_pts_xy = new_pts_xy;
+            // //debug end
+
+            for(int i=0; i < new_pts_xy[0].size(); i++)
+            {
+              double global_x =  new_pts_xy[0][i];
+              double global_y =  new_pts_xy[1][i];
+
+              double shift_x = global_x - ref_x;
+              double shift_y = global_y - ref_y;
+
+              double local_x = shift_x*cos(-ref_yaw) - shift_y*sin(-ref_yaw);
+              double local_y = shift_x*sin(-ref_yaw) + shift_y*cos(-ref_yaw);
+
+              new_pts_xy[0][i] = local_x;
+              new_pts_xy[1][i] = local_y;
+
+
+              // //debug spline ERROR
+              // // Assertion `m_x[i]<m_x[i+1]' failed.
+              // if(i>0)
+              // {
+              //   if(new_pts_xy[0][i] < new_pts_xy[0][i-1])
+              //   {
+              //     // new_pts_xy[0][i] = new_pts_xy[0][i-1]+0.001;
+              //
+              //     // cout << endl;
+              //     // cout << "i  = " << i << endl;
+              //     // cout << "s,d prev = " << new_pts_sd[0][i-3]<<"," << new_pts_sd[1][i-3] << endl;
+              //     // cout << "s,d now  = " << new_pts_sd[0][i-2]<<"," << new_pts_sd[1][i-2] << endl;
+              //     // cout << endl;
+              //     //
+              //     // cout << "sd to xy" << endl;
+              //     // cout << "Before coordinate conversion " << endl;
+              //     // cout << "x,y = " << global_x <<","<< global_y << endl;
+              //     // cout << endl;
+              //     //
+              //     // cout << "ref_x  = " << ref_x << endl;
+              //     // cout << "ref_y  = " << ref_y << endl;
+              //     // cout << "ref_yaw  = " << ref_yaw << endl;
+              //     // cout << endl;
+              //     //
+              //     // cout << "shifting " << endl;
+              //     // cout << "shift_x,shift_y = " << shift_x <<","<<shift_y<< endl;
+              //     // cout << endl;
+              //     //
+              //     // cout << "after coordinate conversion " << endl;
+              //     // cout << "x,y prev = " << new_pts_xy[0][i-1] <<","<<new_pts_xy[1][i-1] << endl;
+              //     // cout << "x,y now  = " << local_x   <<","<< local_y << endl;
+              //     // cout << endl;
+              //     //
+              //     // cout << "new_pts_sd[0].size() = " << new_pts_sd[0].size() << endl;
+              //     // cout << "previous_path_end_s = " << previous_path_end_s << endl;
+              //     // for(int i=0; i < new_pts_sd[0].size(); i++)
+              //     // {
+              //     //   cout << "new_pts_s,d = " << new_pts_sd[0][i] <<","<< new_pts_sd[1][i]<< endl;
+              //     // }
+              //     // cout << endl;
+              //     //
+              //     // cout << "new_pts_xy local coordiante" << endl;
+              //     // cout << "new_pts_xy[0].size() = " << new_pts_xy[0].size() << endl;
+              //     // for(int i=0; i < new_pts_xy[0].size(); i++)
+              //     // {
+              //     //   cout << "new_pts_x,y = " << new_pts_xy[0][i] <<","<< new_pts_xy[1][i]<< endl;
+              //     // }
+              //     // cout << endl;
+              //     //
+              //     // cout << "new_pts_xy global coordiante" << endl;
+              //     // cout << "new_pts_xy[0].size() = " << copy_new_pts_xy[0].size() << endl;
+              //     // for(int i=0; i < copy_new_pts_xy[0].size(); i++)
+              //     // {
+              //     //   cout << "copy_new_pts_x,y = " << copy_new_pts_xy[0][i] <<","<< copy_new_pts_xy[1][i]<< endl;
+              //     // }
+              //     // cout << endl;
+              //     //
+              //     // cout << "Back to frenet s , d " << endl;
+              //     // vector<double> back_sd(2);
+              //     // back_sd = getFrenet(global_x,
+              //     //                     global_y,
+              //     //                     atan2(global_y,global_x),
+              //     //                     map_waypoints_x,
+              //     //                     map_waypoints_y);
+              //     //
+              //     // cout << "x,y  = " << global_x <<","<<global_y<< endl;
+              //     // cout << "s,d back = " << back_sd[0] <<","<<back_sd[1] << endl;
+              //     // cout << "s,d orig = " << new_pts_sd[0][i-2]<<"," << new_pts_sd[1][i-2] << endl;
+              //     // cout << endl;
+              //
+              //   }
+              // }
+              // //debug end
+            }
+
+            // smoothing path using splines
+
+            // create a spline
+            tk::spline s;
+
+            // set(x,y) points to the spline ( check if `ptsx` sorted )
+            s.set_points(new_pts_xy[0],new_pts_xy[1]);
+
+            // //debug
+            // cout << "\n";
+            // cout << "previous_path_x,y = " << previous_path_x[i]<< previous_path_y[i] <<"\n";
+            // cout << "\n";
+            // //end debug
+
+
+            // calculate how to break up spline points so that we travel at our desired reference velocity
+            double end_x = new_pts_xy[0].back();
+            double end_y = s(end_x);
+            double begin_x = new_pts_xy[0][0];
+            double begin_y = s(begin_x);
+            double start_x = new_pts_xy[0][1];
+            double start_y = s(begin_y);
+            double target_dist = distance(end_x,end_y,begin_x,begin_y);
+            double ave_vel = target_dist/(DELTA_T * new_pts_xy[0].size());
+            double x_delta = (end_x - 0)/(double)new_pts_size;
+            double x_prev = start_x;
+
+            // get new points from smoothed spline
+            int n_rest_points = N_PATH_POINTS - previous_path_size;//check can be replace with new_pts_size
+            new_pts_xy[0].clear();
+            new_pts_xy[1].clear();
+
+            for(int i=0; i < new_pts_size; i++)
+            {
+              // get each (x,y) point in spline
+              double x_point = x_prev + x_delta;
+              double y_point = s(x_point);
+              x_prev = x_point;
+
+              //rotate & shift , for back to global coordinates
+              x_point = (x_point*cos(ref_yaw) - y_point*sin(ref_yaw));
+              y_point = (x_point*sin(ref_yaw) + y_point*cos(ref_yaw));
+
+              x_point += ref_x;
+              y_point += ref_y;
+
+              // append ponit to trajectory
+              new_pts_xy[0].push_back(x_point);
+              new_pts_xy[1].push_back(y_point);
             }
 
             // add previous path

@@ -111,11 +111,8 @@ double get_potential(VectorXd p,
   p_total += p_rightmost_line;
 
   // lane line potential
-  double p_lane0 = W_P_LANE0*exp(-pow((d-LANE0_END)/W_P_SIGMA_LANE0,2));
-  p_total += p_lane0;
-  double p_lane1 = W_P_LANE1*exp(-pow((d-LANE1_END)/W_P_SIGMA_LANE1,2));
-  p_total += p_lane1;
-
+   p_total += W_P_LANE0*exp(-pow((d-LANE0_END)/W_P_SIGMA_LANE0,2));
+   p_total += W_P_LANE1*exp(-pow((d-LANE1_END)/W_P_SIGMA_LANE1,2));
 
   // other car's potential
   for(int i=0; i < sensor_fusion.size(); i++)
@@ -134,41 +131,40 @@ double get_potential(VectorXd p,
     }
     else
     {
-      if(fabs(oc_d-car_d)<2.2)
-      {
-          double dist = oc_s-s;
-          // p_oc = W_P_OTHER_CAR*exp(-pow(dist/W_P_SIGMA_S,2))*exp(-pow((d-oc_d)/W_P_SIGMA_D,2));
-          p_oc = W_P_OTHER_CAR*exp(-pow(dist/W_P_SIGMA_S,2));
+        double dist_s = oc_s-s;
+        double dist_d = oc_d-d;
+        p_oc = W_P_OTHER_CAR*exp(-pow(dist_s/W_P_SIGMA_S,2))*exp(-pow(dist_d/W_P_SIGMA_D,2));
+        // p_oc = W_P_OTHER_CAR*exp(-pow(dist/W_P_SIGMA_S,2));
 
-          //start test go straight
+        //start test go straight
 
 
-          // //debug
-          // cout << "\n";
-          // cout << "dist = " << dist <<  "\n";
-          // cout <<  "\n";
-          // //end debug
+        // //debug
+        // cout << "\n";
+        // cout << "dist = " << dist <<  "\n";
+        // cout <<  "\n";
+        // //end debug
 
-          // double p_oc = 0;
-          // if(dist > 50)
-          // {
-          //   p_oc = 0;
-          // }
-          // else
-          // {
-          //   p_oc = 1000*( (1.0/dist) - (1.0/50));
-          // }
+        // double p_oc = 0;
+        // if(dist > 50)
+        // {
+        //   p_oc = 0;
+        // }
+        // else
+        // {
+        //   p_oc = 1000*( (1.0/dist) - (1.0/50));
+        // }
 
-          // //debug
-          // cout << "\n";
-          // cout << "p_oc = " << p_oc <<  "\n";
-          // cout <<  "\n";
-          // //end debug
+        // //debug
+        // cout << "\n";
+        // cout << "p_oc = " << p_oc <<  "\n";
+        // cout <<  "\n";
+        // //end debug
 
-          //end test go straight
+        //end test go straight
 
-          p_total += p_oc;
-      }
+        p_total += p_oc;
+
     }
     // //debug
     // cout << "\n";
@@ -354,9 +350,9 @@ vector<vector<double>> get_new_path(vector<double> &car_state,
 
         p2 = p1 +  velocity * DELTA_T;
 
-        //debug, ok
+        // //debug, ok
         // p2 << previous_path_end_s+0.3*(i+1),LANE1_CENTER;
-        //debug end
+        // //debug end
 
         new_pts_sd[0].push_back(p2(0));
         new_pts_sd[1].push_back(p2(1));
