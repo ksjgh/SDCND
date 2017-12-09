@@ -216,9 +216,6 @@ int main() {
             }
 
             // convert global coordinates into car's local coordinates for easy math
-            // //debug
-            // vector<vector<double>> copy_new_pts_xy = new_pts_xy;
-            // //debug end
 
             for(int i=0; i < new_pts_xy[0].size(); i++)
             {
@@ -234,89 +231,17 @@ int main() {
               new_pts_xy[0][i] = local_x;
               new_pts_xy[1][i] = local_y;
 
-
-              // //debug spline ERROR
-              // // Assertion `m_x[i]<m_x[i+1]' failed.
-              // if(i>0)
-              // {
-              //   if(new_pts_xy[0][i] < new_pts_xy[0][i-1])
-              //   {
-              //     // new_pts_xy[0][i] = new_pts_xy[0][i-1]+0.001;
-              //
-              //     // cout << endl;
-              //     // cout << "i  = " << i << endl;
-              //     // cout << "s,d prev = " << new_pts_sd[0][i-3]<<"," << new_pts_sd[1][i-3] << endl;
-              //     // cout << "s,d now  = " << new_pts_sd[0][i-2]<<"," << new_pts_sd[1][i-2] << endl;
-              //     // cout << endl;
-              //     //
-              //     // cout << "sd to xy" << endl;
-              //     // cout << "Before coordinate conversion " << endl;
-              //     // cout << "x,y = " << global_x <<","<< global_y << endl;
-              //     // cout << endl;
-              //     //
-              //     // cout << "ref_x  = " << ref_x << endl;
-              //     // cout << "ref_y  = " << ref_y << endl;
-              //     // cout << "ref_yaw  = " << ref_yaw << endl;
-              //     // cout << endl;
-              //     //
-              //     // cout << "shifting " << endl;
-              //     // cout << "shift_x,shift_y = " << shift_x <<","<<shift_y<< endl;
-              //     // cout << endl;
-              //     //
-              //     // cout << "after coordinate conversion " << endl;
-              //     // cout << "x,y prev = " << new_pts_xy[0][i-1] <<","<<new_pts_xy[1][i-1] << endl;
-              //     // cout << "x,y now  = " << local_x   <<","<< local_y << endl;
-              //     // cout << endl;
-              //     //
-              //     // cout << "new_pts_sd[0].size() = " << new_pts_sd[0].size() << endl;
-              //     // cout << "previous_path_end_s = " << previous_path_end_s << endl;
-              //     // for(int i=0; i < new_pts_sd[0].size(); i++)
-              //     // {
-              //     //   cout << "new_pts_s,d = " << new_pts_sd[0][i] <<","<< new_pts_sd[1][i]<< endl;
-              //     // }
-              //     // cout << endl;
-              //     //
-              //     // cout << "new_pts_xy local coordiante" << endl;
-              //     // cout << "new_pts_xy[0].size() = " << new_pts_xy[0].size() << endl;
-              //     // for(int i=0; i < new_pts_xy[0].size(); i++)
-              //     // {
-              //     //   cout << "new_pts_x,y = " << new_pts_xy[0][i] <<","<< new_pts_xy[1][i]<< endl;
-              //     // }
-              //     // cout << endl;
-              //     //
-              //     // cout << "new_pts_xy global coordiante" << endl;
-              //     // cout << "new_pts_xy[0].size() = " << copy_new_pts_xy[0].size() << endl;
-              //     // for(int i=0; i < copy_new_pts_xy[0].size(); i++)
-              //     // {
-              //     //   cout << "copy_new_pts_x,y = " << copy_new_pts_xy[0][i] <<","<< copy_new_pts_xy[1][i]<< endl;
-              //     // }
-              //     // cout << endl;
-              //     //
-              //     // cout << "Back to frenet s , d " << endl;
-              //     // vector<double> back_sd(2);
-              //     // back_sd = getFrenet(global_x,
-              //     //                     global_y,
-              //     //                     atan2(global_y,global_x),
-              //     //                     map_waypoints_x,
-              //     //                     map_waypoints_y);
-              //     //
-              //     // cout << "x,y  = " << global_x <<","<<global_y<< endl;
-              //     // cout << "s,d back = " << back_sd[0] <<","<<back_sd[1] << endl;
-              //     // cout << "s,d orig = " << new_pts_sd[0][i-2]<<"," << new_pts_sd[1][i-2] << endl;
-              //     // cout << endl;
-              //
-              //   }
-              // }
-              // //debug end
             }
 
-            // smoothing path using splines
+            // smoothing path using polynomial
 
-            // create a spline
-            tk::spline s;
+            double* ptrx = &new_pts_xy[0][0];
+            Eigen::Map<Eigen::VectorXd> new_pts_x(ptrx, new_pts_xy[0].size());
 
-            // set(x,y) points to the spline ( check if `ptsx` sorted )
-            s.set_points(new_pts_xy[0],new_pts_xy[1]);
+            double* ptry = &new_pts_xy[1][0];
+            Eigen::Map<Eigen::VectorXd> new_pts_y(ptry, new_pts_xy[0].size());
+
+            auto coeff = polyfit(new_pts_x , new_pts_y ,3);
 
             // //debug
             // cout << "\n";
@@ -327,11 +252,11 @@ int main() {
 
             // calculate how to break up spline points so that we travel at our desired reference velocity
             double end_x = new_pts_xy[0].back();
-            double end_y = s(end_x);
+            double end_y = polyeval(coeff,end_x);
             double begin_x = new_pts_xy[0][0];
-            double begin_y = s(begin_x);
+            double begin_y = polyeval(coeff,begin_x);
             double start_x = new_pts_xy[0][1];
-            double start_y = s(begin_y);
+            double start_y = polyeval(coeff,start_x);
             double target_dist = distance(end_x,end_y,begin_x,begin_y);
             double ave_vel = target_dist/(DELTA_T * new_pts_xy[0].size());
             double x_delta = (end_x - 0)/(double)new_pts_size;
@@ -346,7 +271,7 @@ int main() {
             {
               // get each (x,y) point in spline
               double x_point = x_prev + x_delta;
-              double y_point = s(x_point);
+              double y_point = polyeval(coeff,x_point);
               x_prev = x_point;
 
               //rotate & shift , for back to global coordinates
